@@ -20,10 +20,12 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -67,6 +70,9 @@ import de.thm.smartshopping.ui.destinations.einkaufslisten.viewmodels.Einkaufsli
 import de.thm.smartshopping.ui.destinations.einkaufslisten.viewmodels.EinkaufslistenViewModel
 import de.thm.smartshopping.ui.destinations.rezepte.RezepteScreen
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -171,14 +177,29 @@ fun MainScreen(
 	}
 
 	if (uiState.isLoading) {
-		Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+		Column(
+			horizontalAlignment = Alignment.CenterHorizontally
+		) {
 			CircularProgressIndicator()
+
+			Spacer(Modifier.height(16.dp))
+
+			Text(
+				"Kitchen Mate lädt...",
+				style = MaterialTheme.typography.bodyLarge
+			)
 		}
 	} else {
 		Scaffold(
 			bottomBar = {
 				if (currentRoute != "einkaufslisten_shoppingmode/{einkaufslisteId}") {
-					NavigationBar {
+					NavigationBar(
+
+						containerColor = MaterialTheme.colorScheme.surface,
+
+						tonalElevation = 8.dp
+
+					) {
 						items.forEachIndexed { index, screen ->
 							NavigationBarItem(
 								icon = {
@@ -202,7 +223,7 @@ fun MainScreen(
 										restoreState = true
 									}
 								},
-								alwaysShowLabel = true
+								alwaysShowLabel = false
 							)
 						}
 					}
@@ -346,13 +367,19 @@ fun DashboardTopAppBar(
 )
 {
 	TopAppBar(
-		title = { Text(title) },
+		title = {
+			Text(
+				text = title,
+				style = MaterialTheme.typography.headlineSmall
+			)
+		},
 		navigationIcon = if (onNavigationIconClick != null || showNavigationIcon) navigationIcon else {
 			{}
 		},
 		actions = actions,
 		colors = TopAppBarDefaults.topAppBarColors(
-			containerColor = MaterialTheme.colorScheme.onPrimary,
+			containerColor = MaterialTheme.colorScheme.surface,
+			titleContentColor = MaterialTheme.colorScheme.onSurface
 		)
 	)
 }

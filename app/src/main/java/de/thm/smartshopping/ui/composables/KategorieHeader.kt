@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 
 @Composable
 fun KategorieHeader(
@@ -28,36 +29,56 @@ fun KategorieHeader(
 	artikelAnzahl: Int,
 	onClick: () -> Unit,
 ) {
-	Row(
+	Surface(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clickable(onClick = onClick)
-			.background(MaterialTheme.colorScheme.primaryContainer)
-			.padding(horizontal = 16.dp, vertical = 12.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.SpaceBetween
+			.padding(horizontal = 12.dp, vertical = 6.dp)
+			.clickable(onClick = onClick),
+
+		shape = RoundedCornerShape(16.dp),
+
+		color = MaterialTheme.colorScheme.primaryContainer
 	) {
-		Text(
-			text = kategorieName,
-			style = MaterialTheme.typography.titleMedium,
-			fontWeight = FontWeight.Bold,
-			color = MaterialTheme.colorScheme.onPrimaryContainer
-		)
-		Row {
+
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 18.dp, vertical = 14.dp),
+
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.SpaceBetween
+		) {
+
 			Text(
-				text = "($artikelAnzahl)",
-				style = MaterialTheme.typography.titleMedium,
-				fontWeight = FontWeight.Bold,
+				text = kategorieName,
+				style = MaterialTheme.typography.titleLarge,
 				color = MaterialTheme.colorScheme.onPrimaryContainer
 			)
-			Icon(
-				imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-				contentDescription = if (isExpanded) "Einklappen" else "Ausklappen",
-				tint = MaterialTheme.colorScheme.onPrimaryContainer
-			)
+
+			Row(
+				verticalAlignment = Alignment.CenterVertically
+			) {
+
+				Text(
+					text = artikelAnzahl.toString(),
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.onPrimaryContainer
+				)
+
+				Icon(
+					imageVector =
+						if (isExpanded)
+							Icons.Filled.KeyboardArrowUp
+						else
+							Icons.Filled.KeyboardArrowDown,
+
+					contentDescription = null,
+
+					tint = MaterialTheme.colorScheme.onPrimaryContainer
+				)
+			}
 		}
 	}
-	HorizontalDivider()
 }
 
 @Preview(showBackground = true)

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,7 +34,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +73,11 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Surface
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -168,26 +173,23 @@ fun EinkaufslistenShoppingModeScreen(
 		modifier = Modifier.padding(bottom = 20.dp),
 		topBar = {
 			DashboardTopAppBar(
-				title = state.einkaufsliste?.name ?: "",
+				title = "${state.einkaufsliste?.name} 🛒",
 				showNavigationIcon = true,
 				navigationIcon = {
-					Box(
-						modifier = Modifier
-							.background(
-							color = MaterialTheme.colorScheme.primaryContainer,
-							shape = CircleShape
-							).padding(8.dp)
-							.clickable {
-								onEvent(EinkaufslistenAnsichtEvent.ExitShoppingMode)
-								navController.navigate("einkaufslisten_ansicht/$id") {
-									popUpTo("einkaufslisten_ansicht/{einkaufslisteId}") { inclusive = true }
+					IconButton(
+						onClick = {
+							onEvent(EinkaufslistenAnsichtEvent.ExitShoppingMode)
+
+							navController.navigate("einkaufslisten_ansicht/$id") {
+								popUpTo("einkaufslisten_ansicht/{einkaufslisteId}") {
+									inclusive = true
 								}
 							}
+						}
 					) {
 						Icon(
-							imageVector = Icons.Filled.ShoppingCart,
-							tint = MaterialTheme.colorScheme.onPrimaryContainer,
-							contentDescription = "Einkaufsliste bearbeiten"
+							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+							contentDescription = "Zurück"
 						)
 					}
 				},
@@ -206,6 +208,8 @@ fun EinkaufslistenShoppingModeScreen(
 				exit = scaleOut(tween(50))
 			) {
 				FloatingActionButton(
+					containerColor = MaterialTheme.colorScheme.primary,
+					contentColor = MaterialTheme.colorScheme.onPrimary,
 					onClick = {
 						onEvent(EinkaufslistenAnsichtEvent.ShowAddArtikelMenu(true))
 					}
@@ -225,8 +229,25 @@ fun EinkaufslistenShoppingModeScreen(
 			if (state.isLoading) {
 				CircularProgressIndicator()
 			} else if (state.gruppierteArtikel.isEmpty() && state.artikelOhneKategorie.isEmpty()) {
-				Text(text = "Keine Artikel vorhanden",
-					style = MaterialTheme.typography.bodyLarge)
+				Column(
+					horizontalAlignment = Alignment.CenterHorizontally
+				) {
+
+					Text(
+						text = "🛍️",
+						style = MaterialTheme.typography.headlineLarge
+					)
+
+					Text(
+						text = "Einkaufsliste leer",
+						style = MaterialTheme.typography.headlineSmall
+					)
+
+					Text(
+						text = "Füge Artikel hinzu um zu starten",
+						style = MaterialTheme.typography.bodyMedium
+					)
+				}
 			} else {
 				LazyColumn(
 					modifier = Modifier.fillMaxSize()
@@ -254,7 +275,6 @@ fun EinkaufslistenShoppingModeScreen(
 									artikel = artikel,
 									onEvent = onEvent
 								)
-								HorizontalDivider()
 							}
 						}
 					}
@@ -273,7 +293,6 @@ fun EinkaufslistenShoppingModeScreen(
 								artikel = it,
 								onEvent = onEvent
 							)
-							HorizontalDivider()
 						}
 					}
 				}
@@ -358,87 +377,113 @@ private fun ArtikelEntry(
 	val textDecoration = if (artikel.erledigt) TextDecoration.LineThrough else TextDecoration.None
 	val alpha = if (artikel.erledigt) 0.6f else 1.0f
 
-	Row(
+	ElevatedCard(
 		modifier = Modifier
 			.fillMaxWidth()
-			.background(MaterialTheme.colorScheme.background)
+			.padding(horizontal = 12.dp, vertical = 6.dp)
 			.combinedClickable(
 				onClick = {
-					onEvent(EinkaufslistenAnsichtEvent.ToggleArtikelErledigt(artikel))
+					onEvent(
+						EinkaufslistenAnsichtEvent.ToggleArtikelErledigt(
+							artikel
+						)
+					)
 				},
 				onLongClick = {
-					onEvent(EinkaufslistenAnsichtEvent.ShowEditArtikelMenu(artikel))
+					onEvent(
+						EinkaufslistenAnsichtEvent.ShowEditArtikelMenu(
+							artikel
+						)
+					)
+				}
+			),
+
+		shape = RoundedCornerShape(20.dp),
+
+		elevation = CardDefaults.elevatedCardElevation(
+			defaultElevation = 4.dp
+		)
+	) {
+
+		Row(
+			modifier = Modifier.padding(18.dp),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+
+			Checkbox(
+				modifier = Modifier.size(30.dp),
+				checked = artikel.erledigt,
+				onCheckedChange = {
+					onEvent(
+						EinkaufslistenAnsichtEvent.ToggleArtikelErledigt(
+							artikel
+						)
+					)
 				}
 			)
-			.padding(horizontal = 16.dp)
-			.padding(end = 8.dp),
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		Column(
-			modifier = Modifier
-				.weight(1f)
-				.heightIn(max = 120.dp)
-				.fillMaxWidth(),
-			verticalArrangement = Arrangement.Center
-		) {
-			Row(
-				modifier = Modifier
-					.padding(vertical = 8.dp)
-					.fillMaxWidth(),
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.Start
+
+			Spacer(modifier = Modifier.width(12.dp))
+
+			Column(
+				modifier = Modifier.weight(1f)
 			) {
-				Text(
-					modifier = Modifier
-						.weight(3f),
-					text = artikel.artikel.name,
-					fontSize = 18.sp,
-					textDecoration = textDecoration,
-					color = MaterialTheme.colorScheme.onBackground.copy(alpha = alpha)
-				)
-				Text(
-					modifier = Modifier
-						.weight(2f),
-					text = "$formattedMenge ${artikel.artikel.einheit ?: ""}",
-					fontSize = 16.sp,
-					textDecoration = textDecoration,
-					color = MaterialTheme.colorScheme.onBackground.copy(alpha = alpha)
-				)
-			}
-			if (artikel.notiz != null) {
-				Row(modifier = Modifier
-					.fillMaxWidth()
-					.wrapContentHeight()
-					.padding(bottom = 8.dp),
+
+				Row(
 					verticalAlignment = Alignment.CenterVertically
 				) {
-					Icon(
-						modifier = Modifier
-							.size(16.dp),
-						imageVector = Icons.AutoMirrored.Outlined.StickyNote2,
-						contentDescription = "Notiz",
-						tint = MaterialTheme.colorScheme.outline.copy(alpha = alpha)
-					)
+
 					Text(
-						modifier = Modifier.padding(start = 8.dp),
-						text = artikel.notiz,
-						color = MaterialTheme.colorScheme.outline.copy(alpha = alpha),
-						fontSize = 13.sp,
-						maxLines = 3
+						text = artikel.artikel.name,
+						style = MaterialTheme.typography.titleLarge,
+						textDecoration = textDecoration,
+						color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
+						modifier = Modifier.weight(1f)
 					)
+
+					Surface(
+						shape = RoundedCornerShape(12.dp),
+						color = MaterialTheme.colorScheme.secondaryContainer
+					) {
+
+						Text(
+							modifier = Modifier.padding(
+								horizontal = 10.dp,
+								vertical = 6.dp
+							),
+
+							text = "$formattedMenge ${artikel.artikel.einheit ?: ""}",
+							style = MaterialTheme.typography.bodyMedium
+						)
+					}
+				}
+
+				if (artikel.notiz != null) {
+
+					Spacer(modifier = Modifier.height(10.dp))
+
+					Row(
+						verticalAlignment = Alignment.CenterVertically
+					) {
+
+						Icon(
+							modifier = Modifier.size(16.dp),
+							imageVector = Icons.AutoMirrored.Outlined.StickyNote2,
+							contentDescription = null,
+							tint = MaterialTheme.colorScheme.outline.copy(alpha = alpha)
+						)
+
+						Spacer(modifier = Modifier.width(8.dp))
+
+						Text(
+							text = artikel.notiz,
+							style = MaterialTheme.typography.bodyMedium,
+							color = MaterialTheme.colorScheme.outline.copy(alpha = alpha),
+							maxLines = 3
+						)
+					}
 				}
 			}
 		}
-
-		Spacer(Modifier.width(8.dp))
-
-		Checkbox(
-			checked = artikel.erledigt,
-			onCheckedChange = {
-				onEvent(EinkaufslistenAnsichtEvent.ToggleArtikelErledigt(artikel))
-			},
-			modifier = Modifier.size(36.dp)
-		)
 	}
 }
 

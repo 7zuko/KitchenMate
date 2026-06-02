@@ -29,6 +29,8 @@ import de.thm.smartshopping.methods.navBarHeight // Assuming you have this
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptCard
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptMock
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.FloatingActionButton
 
 // Mock data for the screen
 val mockRezepteListe = List(10) { index ->
@@ -45,6 +47,18 @@ fun RezepteScreen(
 	navController: NavController,
 ) {
 	Scaffold(
+		floatingActionButton = {
+			FloatingActionButton(
+				onClick = {
+					// TODO Rezept erstellen
+				}
+			) {
+				Icon(
+					imageVector = Icons.Default.Add,
+					contentDescription = "Rezept erstellen"
+				)
+			}
+		},
 		modifier = Modifier.padding(bottom = navBarHeight), // If you use a custom bottom nav bar
 		topBar = {
 			DashboardTopAppBar( // Reusing your existing TopAppBar
@@ -53,9 +67,6 @@ fun RezepteScreen(
 				actions = {
 					IconButton(onClick = { /* TODO: Search Action */ }) {
 						Icon(Icons.Filled.Search, contentDescription = "Rezepte durchsuchen")
-					}
-					IconButton(onClick = { /* TODO: Add Rezept Action */ }) {
-						Icon(Icons.Filled.Add, contentDescription = "Neues Rezept erstellen")
 					}
 				}
 			)
@@ -68,10 +79,25 @@ fun RezepteScreen(
 					.fillMaxSize(),
 				contentAlignment = Alignment.Center
 			) {
-				Text(
-					text = "Keine Rezepte vorhanden.",
-					style = MaterialTheme.typography.bodyLarge
-				)
+				Column(
+					horizontalAlignment = Alignment.CenterHorizontally
+				) {
+
+					Text(
+						text = "🍳",
+						style = MaterialTheme.typography.headlineLarge
+					)
+
+					Text(
+						text = "Noch keine Rezepte",
+						style = MaterialTheme.typography.headlineSmall
+					)
+
+					Text(
+						text = "Erstelle dein erstes Rezept",
+						style = MaterialTheme.typography.bodyMedium
+					)
+				}
 			}
 		} else {
 			LazyVerticalGrid(
@@ -79,9 +105,9 @@ fun RezepteScreen(
 				modifier = Modifier
 					.padding(paddingValues)
 					.fillMaxSize(),
-				contentPadding = PaddingValues(8.dp), // Overall padding for the grid
-				verticalArrangement = Arrangement.spacedBy(2.dp), // Space between rows
-				horizontalArrangement = Arrangement.spacedBy(2.dp) // Space between columns
+				contentPadding = PaddingValues(16.dp), // Overall padding for the grid
+				verticalArrangement = Arrangement.spacedBy(12.dp), // Space between rows
+				horizontalArrangement = Arrangement.spacedBy(12.dp) // Space between columns
 			) {
 				items(
 					items = mockRezepteListe,

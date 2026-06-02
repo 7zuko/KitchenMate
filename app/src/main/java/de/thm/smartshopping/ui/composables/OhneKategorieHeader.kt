@@ -14,28 +14,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 
 @Composable
-fun OhneKategorieHeader(artikelAnzahl: Int) {
-	Row(
-		Modifier
+fun OhneKategorieHeader(
+	artikelAnzahl: Int
+) {
+	Surface(
+		modifier = Modifier
 			.fillMaxWidth()
-			.background(MaterialTheme.colorScheme.surfaceVariant)
-			.padding(horizontal = 16.dp, vertical = 8.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.SpaceBetween
+			.padding(horizontal = 12.dp, vertical = 6.dp),
+
+		shape = RoundedCornerShape(16.dp),
+
+		color = MaterialTheme.colorScheme.surfaceVariant
 	) {
-		Text(
-			text = "Ohne Kategorie",
-			style = MaterialTheme.typography.titleMedium,
-			color = MaterialTheme.colorScheme.onSurfaceVariant
-		)
-		Text(
-			text = "($artikelAnzahl)",
-			style = MaterialTheme.typography.titleMedium,
-			fontWeight = FontWeight.Bold,
-			color = MaterialTheme.colorScheme.onSurfaceVariant
-		)
+
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 18.dp, vertical = 14.dp),
+
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.SpaceBetween
+		) {
+
+			Text(
+				text = "Ohne Kategorie",
+				style = MaterialTheme.typography.titleLarge,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+
+			Text(
+				text = artikelAnzahl.toString(),
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.SemiBold,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		}
 	}
 }
 

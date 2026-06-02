@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +36,12 @@ import de.thm.smartshopping.ui.destinations.einkaufslisten.states.Einkaufslisten
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import kotlinx.coroutines.launch
 import java.util.Date
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +50,14 @@ fun EinkaufslistenScreen(
 	onEvent: (EinkaufslistenEvent) -> Unit,
 	navController: NavController,
 ) {
+
+	var searchText by remember {
+		mutableStateOf("")
+	}
+
+	var isSearching by remember {
+		mutableStateOf(false)
+	}
 
 	val listState = rememberLazyListState()
 
@@ -97,11 +110,31 @@ fun EinkaufslistenScreen(
 		modifier = Modifier.padding(bottom = navBarHeight),
 		topBar = {
 			DashboardTopAppBar(
-				title = "Einkaufslisten",
+				title = if (isSearching) "" else "Einkaufslisten",
 				showNavigationIcon = false,
 				actions = {
-					IconButton(onClick = { println("Search clicked") }) {
-						Icon(Icons.Filled.Search, contentDescription = "Search")
+					if (isSearching) {
+						OutlinedTextField(
+							value = searchText,
+							onValueChange = {
+								searchText = it
+							},
+							placeholder = {
+								Text("Suchen...")
+							},
+							singleLine = true
+						)
+					} else {
+						IconButton(
+							onClick = {
+								isSearching = true
+							}
+						) {
+							Icon(
+								Icons.Default.Search,
+								contentDescription = "Suche"
+							)
+						}
 					}
 					IconButton(onClick = {
 						onEvent(EinkaufslistenEvent.ShowCreateSheet(true))
@@ -126,16 +159,52 @@ fun EinkaufslistenScreen(
 						modifier = Modifier.fillMaxSize(),
 						contentAlignment = Alignment.Center
 					) {
-						Text(text = "Keine Einkaufslisten vorhanden",
-							style = MaterialTheme.typography.bodyLarge)
+						Column(
+							horizontalAlignment = Alignment.CenterHorizontally
+						) {
+							Text(
+
+								text = "🛒",
+
+								style = MaterialTheme.typography.headlineLarge
+
+							)
+
+							Text(
+
+								text = "Noch keine Einkaufslisten",
+
+								style = MaterialTheme.typography.headlineSmall
+
+							)
+
+							Text(
+
+								text = "Erstelle deine erste Liste über das Plus-Symbol",
+
+								style = MaterialTheme.typography.bodyMedium
+
+							)
+						}
 					}
 				} else {
+					val filteredListen =
+						state.einkaufslisten.filter {
+
+							searchText.isBlank() ||
+
+									it.name.contains(
+										searchText,
+										ignoreCase = true
+									)
+						}
+
 					LazyColumn(
 						state = listState,
 						modifier = Modifier.fillMaxSize()
 					) {
 						items(
-							items = state.einkaufslisten,
+							items = filteredListen,
 							key = { it.id }
 						) { einkaufsliste ->
 							//Box(Modifier.fillMaxWidth()) {
@@ -148,7 +217,6 @@ fun EinkaufslistenScreen(
 									onEvent(EinkaufslistenEvent.ShowContextMenu(einkaufsliste))
 								}
 							)
-							HorizontalDivider()
 						}
 					}
 				}

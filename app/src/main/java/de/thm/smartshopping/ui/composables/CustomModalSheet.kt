@@ -1,5 +1,6 @@
 package de.thm.smartshopping.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import kotlinx.coroutines.launch
+import androidx.compose.material3.HorizontalDivider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +52,22 @@ fun CustomModalSheet(
 
 	ModalBottomSheet(
 		sheetState = sheetState,
-		onDismissRequest = onDismissAfterClose
+		onDismissRequest = onDismissAfterClose,
+
+		containerColor = MaterialTheme.colorScheme.surface,
+
+		dragHandle = {
+			Box(
+				modifier = Modifier
+					.padding(vertical = 8.dp)
+					.width(48.dp)
+					.height(4.dp)
+					.background(
+						MaterialTheme.colorScheme.outlineVariant,
+						shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
+					)
+			)
+		}
 	) {
 		Column(
 			modifier = Modifier
@@ -59,12 +76,16 @@ fun CustomModalSheet(
 				.padding(
 					bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
 				)
-				.padding(horizontal = 16.dp),
+				.padding(horizontal = 20.dp),
 			horizontalAlignment = Alignment.CenterHorizontally
 		) {
 			Text(
 				text = title,
-				style = MaterialTheme.typography.titleLarge,
+				style = MaterialTheme.typography.headlineSmall,
+				modifier = Modifier.padding(bottom = 20.dp)
+			)
+
+			HorizontalDivider(
 				modifier = Modifier.padding(bottom = 16.dp)
 			)
 
@@ -90,11 +111,15 @@ fun CustomModalSheet(
 							}
 						}
 					) {
-						Text("Abbrechen")
+						Text(
+							text = "Abbrechen",
+							style = MaterialTheme.typography.labelLarge
+						)
 					}
-					Spacer(Modifier.width(16.dp))
+					Spacer(Modifier.width(12.dp))
 
 					Button(
+						shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
 						onClick = {
 							onConfirm {
 								scope.launch { sheetState.hide() }.invokeOnCompletion {
@@ -107,7 +132,10 @@ fun CustomModalSheet(
 						},
 						enabled = conditionConfirmEnabled
 					) {
-						Text(confirmButtonName)
+						Text(
+							text = confirmButtonName,
+							style = MaterialTheme.typography.labelLarge
+						)
 					}
 				}
 			}

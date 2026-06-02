@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +69,13 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -226,6 +232,8 @@ fun EinkaufslistenAnsicht(
 				exit = scaleOut(tween(50))
 			) {
 				FloatingActionButton(
+					containerColor = MaterialTheme.colorScheme.primary,
+					contentColor = MaterialTheme.colorScheme.onPrimary,
 					onClick = {
 						onEvent(EinkaufslistenAnsichtEvent.ShowAddArtikelMenu(true))
 					}
@@ -244,8 +252,25 @@ fun EinkaufslistenAnsicht(
 			if (state.isLoading) {
 				CircularProgressIndicator()
 			} else if (state.gruppierteArtikel.isEmpty() && state.artikelOhneKategorie.isEmpty()) {
-				Text(text = "Keine Artikel vorhanden",
-					style = MaterialTheme.typography.bodyLarge)
+				Column(
+					horizontalAlignment = Alignment.CenterHorizontally
+				) {
+
+					Text(
+						text = "🛒",
+						style = MaterialTheme.typography.headlineLarge
+					)
+
+					Text(
+						text = "Noch keine Artikel",
+						style = MaterialTheme.typography.headlineSmall
+					)
+
+					Text(
+						text = "Füge Artikel über den Plus-Button hinzu",
+						style = MaterialTheme.typography.bodyMedium
+					)
+				}
 			} else {
 				LazyColumn(
 					modifier = Modifier.fillMaxSize()
@@ -273,7 +298,6 @@ fun EinkaufslistenAnsicht(
 									isInSelectionMode = state.isInSelectionMode,
 									onEvent = onEvent
 								)
-								HorizontalDivider()
 							}
 						}
 					}
@@ -292,7 +316,6 @@ fun EinkaufslistenAnsicht(
 								isInSelectionMode = state.isInSelectionMode,
 								onEvent = onEvent
 							)
-							HorizontalDivider()
 						}
 					}
 				}
@@ -377,76 +400,102 @@ private fun ArtikelEntry(
 
 	val formattedMenge = artikel.menge.formatToDisplay()
 
-	val backgroundColor = if (isSelected) {
+	val cardColor = if (isSelected) {
 		MaterialTheme.colorScheme.primaryContainer
 	} else {
-		MaterialTheme.colorScheme.background
+		MaterialTheme.colorScheme.surface
 	}
 
-	Column(
+	ElevatedCard(
 		modifier = Modifier
-			.heightIn(max = 120.dp)
 			.fillMaxWidth()
-			.background(backgroundColor)
+			.padding(horizontal = 12.dp, vertical = 6.dp)
 			.combinedClickable(
 				onClick = {
 					if (isInSelectionMode) {
-						onEvent(EinkaufslistenAnsichtEvent.ToggleArtikelSelection(artikel.artikel.id))
+						onEvent(
+							EinkaufslistenAnsichtEvent.ToggleArtikelSelection(
+								artikel.artikel.id
+							)
+						)
 					} else {
-						onEvent(EinkaufslistenAnsichtEvent.ShowEditArtikelMenu(artikel))
+						onEvent(
+							EinkaufslistenAnsichtEvent.ShowEditArtikelMenu(
+								artikel
+							)
+						)
 					}
 				},
 				onLongClick = {
-					onEvent(EinkaufslistenAnsichtEvent.LongPressArtikel(artikel.artikel.id))
+					onEvent(
+						EinkaufslistenAnsichtEvent.LongPressArtikel(
+							artikel.artikel.id
+						)
+					)
 				}
+			),
 
-			)
-			.padding(horizontal = 24.dp),
-		verticalArrangement = Arrangement.Center
+		shape = RoundedCornerShape(20.dp),
+
+		colors = CardDefaults.elevatedCardColors(
+			containerColor = cardColor
+		)
 	) {
-		Row(
-			modifier = Modifier
-				.padding(vertical = 8.dp)
-				.fillMaxWidth(),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.Start
+
+		Column(
+			modifier = Modifier.padding(18.dp)
 		) {
-			Text(
-				modifier = Modifier
-					.weight(3f),
-				text = artikel.artikel.name,
-				fontSize = 20.sp
-			)
-			Text(
-				modifier = Modifier
-					.padding(start = 12.dp)
-					.weight(2f),
-				text = "$formattedMenge ${artikel.artikel.einheit ?: ""}",
-				fontSize = 20.sp
-			)
-		}
-		if (artikel.notiz != null) {
-			Row(modifier = Modifier
-				.fillMaxWidth()
-				.wrapContentHeight()
-				.padding(bottom = 8.dp),
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.Start,
+
+			Row(
+				verticalAlignment = Alignment.CenterVertically
 			) {
-				Icon(
-					modifier = Modifier
-						.size(20.dp),
-					imageVector = Icons.AutoMirrored.Outlined.StickyNote2,
-					contentDescription = "Notiz",
-					tint = MaterialTheme.colorScheme.outline
-				)
+
 				Text(
-					modifier = Modifier.padding(start = 12.dp),
-					text = artikel.notiz,
-					color = MaterialTheme.colorScheme.outline,
-					fontSize = 14.sp,
-					maxLines = 3
+					text = artikel.artikel.name,
+					style = MaterialTheme.typography.titleLarge,
+					modifier = Modifier.weight(1f)
 				)
+
+				Surface(
+					shape = RoundedCornerShape(12.dp),
+					color = MaterialTheme.colorScheme.secondaryContainer
+				) {
+
+					Text(
+						modifier = Modifier.padding(
+							horizontal = 10.dp,
+							vertical = 6.dp
+						),
+
+						text = "$formattedMenge ${artikel.artikel.einheit ?: ""}",
+						style = MaterialTheme.typography.bodyMedium
+					)
+				}
+			}
+
+			if (artikel.notiz != null) {
+
+				Spacer(modifier = Modifier.height(12.dp))
+
+				Row(
+					verticalAlignment = Alignment.CenterVertically
+				) {
+
+					Icon(
+						modifier = Modifier.size(18.dp),
+						imageVector = Icons.AutoMirrored.Outlined.StickyNote2,
+						contentDescription = null,
+						tint = MaterialTheme.colorScheme.outline
+					)
+
+					Spacer(modifier = Modifier.width(8.dp))
+
+					Text(
+						text = artikel.notiz,
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.outline
+					)
+				}
 			}
 		}
 	}

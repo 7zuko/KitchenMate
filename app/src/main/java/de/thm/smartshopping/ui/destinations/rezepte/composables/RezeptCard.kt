@@ -1,6 +1,5 @@
 package de.thm.smartshopping.ui.destinations.rezepte.composables // Or your preferred package
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.R
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.material3.Surface
 
 // Mock data class for preview and structure
 data class RezeptMock(
@@ -43,13 +43,12 @@ fun RezeptCard(
 	modifier: Modifier = Modifier,
 	onClick: () -> Unit = {}
 ) {
-	OutlinedCard(
+	ElevatedCard(
 		onClick = onClick,
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(8.dp), // Padding around each card
-		shape = RoundedCornerShape(12.dp),
-		border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
+			.padding(2.dp), // Padding around each card
+		shape = RoundedCornerShape(24.dp),
 		colors = CardDefaults.outlinedCardColors(
 			containerColor = MaterialTheme.colorScheme.surface
 		)
@@ -64,7 +63,7 @@ fun RezeptCard(
 					.fillMaxWidth()
 					.aspectRatio(16f / 9f) // Common aspect ratio for images
 					.padding(8.dp) // Padding inside the card before the image
-					.clip(RoundedCornerShape(8.dp)), // Rounded corners for the image box
+					.clip(RoundedCornerShape(18.dp)), // Rounded corners for the image box
 				contentAlignment = Alignment.Center
 			) {
 				Image(
@@ -77,14 +76,32 @@ fun RezeptCard(
 
 			Spacer(modifier = Modifier.height(8.dp))
 
+			Surface(
+				shape = RoundedCornerShape(12.dp),
+				color = MaterialTheme.colorScheme.secondaryContainer
+			) {
+				Text(
+					modifier = Modifier.padding(
+						horizontal = 10.dp,
+						vertical = 6.dp
+					),
+
+					text = "⏱ 25 Min",
+					style = MaterialTheme.typography.bodySmall
+				)
+			}
+
+			Spacer(modifier = Modifier.height(8.dp))
 			// Recipe Name
 			Text(
 				text = rezept.name,
-				style = MaterialTheme.typography.titleMedium,
+				style = MaterialTheme.typography.titleLarge,
 				textAlign = TextAlign.Center,
+
 				modifier = Modifier
-					.padding(horizontal = 8.dp)
-					.padding(bottom = 12.dp), // Padding below text
+					.padding(horizontal = 12.dp)
+					.padding(bottom = 16.dp),
+
 				maxLines = 2,
 				overflow = TextOverflow.Ellipsis
 			)

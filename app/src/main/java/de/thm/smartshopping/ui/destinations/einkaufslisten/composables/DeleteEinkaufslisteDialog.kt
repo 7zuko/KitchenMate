@@ -6,6 +6,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import de.thm.smartshopping.data.Einkaufsliste
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun DeleteEinkaufslisteDialog(
@@ -15,13 +16,25 @@ fun DeleteEinkaufslisteDialog(
 ) {
 	AlertDialog(
 		onDismissRequest = onDismiss,
-		title = { Text("Einkaufsliste löschen") },
-		text = { Text("Möchtest du die Einkaufsliste \"${einkaufsliste.name}\" wirklich löschen?") },
+		containerColor = MaterialTheme.colorScheme.surface,
+		title = {
+			Text(
+				text = "🗑️ Einkaufsliste löschen"
+			)
+		},
+		text = {
+			Text(
+				"Die Liste \"${einkaufsliste.name}\" wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+			)
+		},
 		confirmButton = {
 			TextButton(
 				onClick = onConfirm
 			) {
-				Text("Löschen")
+				Text(
+					text = "Löschen",
+					color = MaterialTheme.colorScheme.error
+				)
 			}
 		},
 		dismissButton = {

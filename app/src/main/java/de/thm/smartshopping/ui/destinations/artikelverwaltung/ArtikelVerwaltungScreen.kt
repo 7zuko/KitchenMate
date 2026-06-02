@@ -55,6 +55,11 @@ import de.thm.smartshopping.ui.destinations.artikelverwaltung.states.ArtikelVerw
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -160,7 +165,6 @@ fun ArtikelVerwaltungScreen(
 								key = { it.id }
 							) { artikel ->
 								ArtikelZeile(artikel = artikel)
-								HorizontalDivider()
 							}
 						}
 					}
@@ -174,7 +178,6 @@ fun ArtikelVerwaltungScreen(
 							key = { artikel -> "ohne_kat_artikel_${artikel.id}" }
 						) { artikel ->
 							ArtikelZeile(artikel = artikel)
-							HorizontalDivider()
 						}
 					}
 				}
@@ -213,21 +216,51 @@ fun ArtikelVerwaltungScreenPreview() {
 fun ArtikelZeile(
 	artikel: Artikel
 ) {
-	Row(
+	ElevatedCard(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clickable {}
-			.padding(horizontal = 16.dp, vertical = 12.dp),
-		verticalAlignment = Alignment.CenterVertically
+			.padding(horizontal = 12.dp, vertical = 6.dp)
+			.clickable { },
+
+		shape = RoundedCornerShape(20.dp),
+
+		elevation = CardDefaults.elevatedCardElevation(
+			defaultElevation = 3.dp
+		)
 	) {
-		Column(modifier = Modifier.weight(1f)) {
-			Text(text = artikel.name, style = MaterialTheme.typography.bodyLarge)
-			if (artikel.einheit != null) {
+
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(18.dp),
+
+			verticalAlignment = Alignment.CenterVertically
+		) {
+
+			Text(
+				text = "🥕",
+				fontSize = 24.sp
+			)
+
+			Spacer(modifier = Modifier.width(12.dp))
+
+			Column(
+				modifier = Modifier.weight(1f)
+			) {
+
 				Text(
-					text = "Einheit: ${artikel.einheit}",
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
+					text = artikel.name,
+					style = MaterialTheme.typography.titleLarge
 				)
+
+				artikel.einheit?.let {
+
+					Text(
+						text = it,
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
 			}
 		}
 	}

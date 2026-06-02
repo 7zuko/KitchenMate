@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +40,9 @@ import de.thm.smartshopping.ui.composables.CustomModalSheet
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 
 private enum class ActionState {
 	Main,
@@ -101,7 +105,7 @@ fun EinkaufslisteAddArtikelSheet(
 	}
 
 	CustomModalSheet(
-		title = "Artikel hinzufügen",
+		title = "➕ Artikel hinzufügen",
 		enableConfirmCancelButtons = true,
 		confirmButtonName = "Speichern",
 		onConfirm = { closeAction ->
@@ -174,6 +178,10 @@ fun EinkaufslisteAddArtikelSheet(
 									selectedArtikel = null
 								},
 								label = { Text("Artikel auswählen oder suchen*") },
+								placeholder = {
+									Text("z.B. Milch")
+								},
+								shape = RoundedCornerShape(20.dp),
 								trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropdown) },
 								singleLine = true
 							)
@@ -205,9 +213,28 @@ fun EinkaufslisteAddArtikelSheet(
 							}
 						}
 
-						Spacer(Modifier.height(12.dp))
+						if (selectedArtikel != null) {
+
+							Surface(
+								modifier = Modifier.fillMaxWidth(),
+								shape = RoundedCornerShape(16.dp),
+								color = MaterialTheme.colorScheme.secondaryContainer
+							) {
+
+								Text(
+									modifier = Modifier.padding(12.dp),
+									text = "✓ ${selectedArtikel!!.name}"
+								)
+							}
+						}
+
+							Spacer(Modifier.height(16.dp))
 
 						OutlinedTextField(
+							shape = RoundedCornerShape(20.dp),
+							placeholder = {
+								Text("1")
+							},
 							modifier = Modifier.fillMaxWidth(),
 							label = { Text("Menge") },
 							value = mengeText,
@@ -249,22 +276,61 @@ fun EinkaufslisteAddArtikelSheet(
 							keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
 						)
 
-						Spacer(Modifier.height(12.dp))
+						Spacer(Modifier.height(16.dp))
 
 						OutlinedTextField(
 							modifier = Modifier.fillMaxWidth(),
 							value = notiz,
 							onValueChange = { notiz = it },
 							label = { Text("Notiz (Optional)") },
+							placeholder = {
+								Text("z.B fettarme Milch")
+							},
+							shape = RoundedCornerShape(20.dp),
 							keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
 							minLines = 2
 						)
 					}
 
 					ActionState.Exists -> {
-						val neueMenge = menge + (einkaufsliste.artikel.firstOrNull { it.artikel.id == selectedArtikel?.id }?.menge ?: 0.0)
-						Text("${selectedArtikel?.name} ist bereits in der Einkaufsliste vorhanden. Soll die Menge addiert werden?")
-						Text("Neue Menge: ${neueMenge.formatToDisplay()} ${selectedArtikel?.einheit ?: ""} ")
+						val neueMenge = menge + (einkaufsliste.artikel.firstOrNull {
+							it.artikel.id == selectedArtikel?.id
+						}?.menge ?: 0.0)
+
+						Column {
+
+							Text(
+								text = "⚠️ Artikel bereits vorhanden",
+								style = MaterialTheme.typography.titleMedium
+							)
+
+							Spacer(Modifier.height(12.dp))
+
+							Text(
+								text = "${selectedArtikel?.name} befindet sich bereits in dieser Einkaufsliste."
+							)
+
+							Spacer(Modifier.height(12.dp))
+
+							Text(
+								text = "Neue Menge nach dem Zusammenführen:"
+							)
+
+							Spacer(Modifier.height(8.dp))
+
+							Surface(
+								shape = RoundedCornerShape(12.dp),
+								color = MaterialTheme.colorScheme.secondaryContainer
+							) {
+								Text(
+									modifier = Modifier.padding(
+										horizontal = 12.dp,
+										vertical = 8.dp
+									),
+									text = "${neueMenge.formatToDisplay()} ${selectedArtikel?.einheit ?: ""}"
+								)
+							}
+						}
 					}
 				}
 			}

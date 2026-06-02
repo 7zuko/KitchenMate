@@ -2,10 +2,21 @@ package de.thm.smartshopping.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Primary Brand Colors
+val SageGreen = Color(0xFF5E7D4A)
+val SageGreenLight = Color(0xFFE7F0E2)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val AccentGold = Color(0xFFD8A95F)
+
+// Backgrounds
+val CreamBackground = Color(0xFFFAFBF8)
+val SurfaceWhite = Color(0xFFFFFFFF)
+
+// Text
+val TextPrimary = Color(0xFF1B1B1B)
+val TextSecondary = Color(0xFF6B6B6B)
+
+// Dark Mode
+val DarkBackground = Color(0xFF121412)
+val DarkSurface = Color(0xFF1B1F1B)
+val DarkPrimary = Color(0xFF89B16E)

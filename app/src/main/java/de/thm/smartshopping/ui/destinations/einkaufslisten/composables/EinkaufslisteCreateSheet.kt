@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -22,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.composables.CustomModalSheet
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,7 @@ fun EinkaufslisteCreateSheet(
 	var listName by remember { mutableStateOf("") }
 
 	CustomModalSheet(
-		title = "Neue Einkaufsliste",
+		title = "🛒 Neue Einkaufsliste",
 		enableConfirmCancelButtons = true,
 		confirmButtonName = "Speichern",
 		onConfirmAfterClose = {
@@ -42,7 +44,7 @@ fun EinkaufslisteCreateSheet(
 				onCreateConfirmed(trimmedName)
 			}
 		},
-		conditionConfirmEnabled = listName.isNotEmpty(),
+		conditionConfirmEnabled = listName.trim().isNotEmpty(),
 		onDismissAfterClose = {
 			listName = ""
 			onDismiss()
@@ -53,11 +55,18 @@ fun EinkaufslisteCreateSheet(
 			value = listName,
 			onValueChange = { listName = it },
 			label = { Text("Name der Einkaufsliste") },
+			placeholder = {Text("z.B. Wocheneinkauf")},
 			singleLine = true,
 			keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(vertical = 8.dp)
+				.padding(vertical = 12.dp),
+			shape = RoundedCornerShape(20.dp)
+		)
+		Text(
+			text = "Einkaufslisten Titel",
+			style = MaterialTheme.typography.bodySmall,
+			color = MaterialTheme.colorScheme.outline
 		)
 	}
 }
