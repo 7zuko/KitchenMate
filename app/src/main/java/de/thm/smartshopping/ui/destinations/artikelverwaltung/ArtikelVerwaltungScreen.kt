@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,6 +59,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import de.thm.smartshopping.ui.composables.SearchTopBar
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -68,6 +73,14 @@ fun ArtikelVerwaltungScreen(
 	onEvent: (ArtikelVerwaltungEvent) -> Unit,
 	navController: NavController,
 ) {
+	var isSearching by remember {
+		mutableStateOf(false)
+	}
+
+	var searchText by remember {
+		mutableStateOf("")
+	}
+
 	val navBackStackEntry by navController.currentBackStackEntryAsState()
 	val currentRoute: String? = navBackStackEntry?.destination?.route
 
@@ -107,11 +120,42 @@ fun ArtikelVerwaltungScreen(
 		modifier = Modifier.padding(bottom = navBarHeight),
 		topBar = {
 			DashboardTopAppBar(
-				title = "Artikelverwaltung",
+				title = {
+					if (!isSearching) {
+						Text("Artikelverwaltung")
+					}
+				},
 				showNavigationIcon = false,
 				actions = {
-					IconButton(onClick = { println("Search clicked") }) {
-						Icon(Icons.Filled.Search, contentDescription = "Search")
+
+					if (isSearching) {
+
+						SearchTopBar(
+							searchText = searchText,
+							placeholder = "Artikel suchen",
+
+							onSearchTextChange = {
+								searchText = it
+							},
+
+							onClose = {
+								searchText = ""
+								isSearching = false
+							}
+						)
+
+					} else {
+
+						IconButton(
+							onClick = {
+								isSearching = true
+							}
+						) {
+							Icon(
+								Icons.Default.Search,
+								contentDescription = "Suche"
+							)
+						}
 					}
 				}
 			)
@@ -141,43 +185,116 @@ fun ArtikelVerwaltungScreen(
 			if (state.isLoading) {
 				CircularProgressIndicator()
 			} else if (state.gruppierteArtikel.isEmpty() && state.artikelOhneKategorie.isEmpty()) {
-				Text(text = "Keine Artikel vorhanden",
-					style = MaterialTheme.typography.bodyLarge)
-			} else {
-				LazyColumn(
-					modifier = Modifier.fillMaxSize()
+				Column(
+					horizontalAlignment = Alignment.CenterHorizontally
 				) {
-					state.gruppierteArtikel.forEach { kategorieGruppe ->
-						stickyHeader {
-							KategorieHeader(
-								kategorieName = kategorieGruppe.kategorie.name,
-								isExpanded = kategorieGruppe.isExpanded,
-								artikelAnzahl = kategorieGruppe.artikelListe.size,
-								onClick = {
-									onEvent(ArtikelVerwaltungEvent.OnKategorieToggle(kategorieGruppe.kategorie.id))
-								}
+
+					Text(
+						text = "🥕",
+						style = MaterialTheme.typography.headlineLarge
+					)
+
+					Text(
+						text = "Noch keine Artikel",
+						style = MaterialTheme.typography.headlineSmall
+					)
+
+					Text(
+						text = "Füge deinen ersten Artikel hinzu",
+						style = MaterialTheme.typography.bodyMedium
+					)
+				}
+			} else {
+				val gefilterteGruppen =
+					state.gruppierteArtikel.map { gruppe ->
+						gruppe.copy(
+							artikelListe = gruppe.artikelListe.filter {
+								searchText.isBlank() ||
+										it.name.contains(
+											searchText,
+											ignoreCase = true
+										)
+							}
+						)
+					}
+
+				val gefilterteArtikelOhneKategorie =
+					state.artikelOhneKategorie.filter {
+						searchText.isBlank() ||
+								it.name.contains(
+									searchText,
+									ignoreCase = true
+								)
+					}
+
+				val hatTreffer =
+					gefilterteGruppen.any { it.artikelListe.isNotEmpty() } ||
+							gefilterteArtikelOhneKategorie.isNotEmpty()
+
+				if (!hatTreffer) {
+					Box(
+						modifier = Modifier.fillMaxSize(),
+						contentAlignment = Alignment.Center
+					) {
+						Column(
+							horizontalAlignment = Alignment.CenterHorizontally
+						) {
+							Text(
+								text = "🔍",
+								style = MaterialTheme.typography.headlineLarge
+							)
+							Text(
+								text = "Keine Artikel gefunden",
+								style = MaterialTheme.typography.headlineSmall
+							)
+							Text(
+								text = "Versuche einen anderen Suchbegriff",
+								style = MaterialTheme.typography.bodyMedium
 							)
 						}
+					}
+				} else {
+					LazyColumn(
+						modifier = Modifier.fillMaxSize()
+					) {
+						gefilterteGruppen
+							.filter {
+								it.artikelListe.isNotEmpty()
+							}
+							.forEach { kategorieGruppe ->
+								stickyHeader {
+									KategorieHeader(
+										kategorieName = kategorieGruppe.kategorie.name,
+										isExpanded = kategorieGruppe.isExpanded,
+										artikelAnzahl = kategorieGruppe.artikelListe.size,
+										onClick = {
+											onEvent(ArtikelVerwaltungEvent.OnKategorieToggle(kategorieGruppe.kategorie.id))
+										}
+									)
+								}
 
-						if (kategorieGruppe.isExpanded) {
+								if (kategorieGruppe.isExpanded) {
+									items(
+										items = kategorieGruppe.artikelListe,
+										key = { it.id }
+									) { artikel ->
+										ArtikelZeile(artikel = artikel)
+									}
+								}
+							}
+
+						if (state.artikelOhneKategorie.isNotEmpty()) {
+							stickyHeader {
+								OhneKategorieHeader(
+									artikelAnzahl = gefilterteArtikelOhneKategorie.size
+								)
+							}
 							items(
-								items = kategorieGruppe.artikelListe,
-								key = { it.id }
+								items = gefilterteArtikelOhneKategorie,
+								key = { artikel -> "ohne_kat_artikel_${artikel.id}" }
 							) { artikel ->
 								ArtikelZeile(artikel = artikel)
 							}
-						}
-					}
-
-					if (state.artikelOhneKategorie.isNotEmpty()) {
-						stickyHeader {
-							OhneKategorieHeader(artikelAnzahl = state.artikelOhneKategorie.size)
-						}
-						items(
-							items = state.artikelOhneKategorie,
-							key = { artikel -> "ohne_kat_artikel_${artikel.id}" }
-						) { artikel ->
-							ArtikelZeile(artikel = artikel)
 						}
 					}
 				}

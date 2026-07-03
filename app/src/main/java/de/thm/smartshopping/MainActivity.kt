@@ -69,10 +69,13 @@ import de.thm.smartshopping.ui.destinations.einkaufslisten.EinkaufslistenShoppin
 import de.thm.smartshopping.ui.destinations.einkaufslisten.viewmodels.EinkaufslistenAnsichtViewModel
 import de.thm.smartshopping.ui.destinations.einkaufslisten.viewmodels.EinkaufslistenViewModel
 import de.thm.smartshopping.ui.destinations.rezepte.RezepteScreen
+import de.thm.smartshopping.ui.destinations.rezepte.details.RezeptDetailScreen
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import de.thm.smartshopping.ui.destinations.rezepte.viewmodels.RezepteViewModel
+import androidx.compose.runtime.remember
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -268,9 +271,60 @@ fun MainScreen(
 					)
 				}
 				composable(route = NavDestination.Rezepte.route) {
-					RezepteScreen(navController = navController)
-				}
 
+					val viewModel: RezepteViewModel = hiltViewModel()
+
+					val state by viewModel.state.collectAsState()
+
+					RezepteScreen(
+						state = state,
+						onEvent = viewModel::onEvent,
+						navController = navController
+					)
+				}
+				composable(
+					route = "rezept_details/{rezeptId}",
+					arguments = listOf(
+						navArgument("rezeptId") {
+							type = NavType.StringType
+						}
+					)
+				) { backStackEntry ->
+
+					val rezeptId =
+						backStackEntry.arguments?.getString("rezeptId")
+
+					println("Route RezeptId: $rezeptId")
+
+					val parentEntry = remember(backStackEntry) {
+						navController.getBackStackEntry(
+							NavDestination.Rezepte.route
+						)
+					}
+
+					val viewModel: RezepteViewModel =
+						hiltViewModel(parentEntry)
+
+					val state by viewModel.state.collectAsState()
+
+					if (rezeptId != null) {
+
+						RezeptDetailScreen(
+							rezeptId = rezeptId,
+							state = state,
+							onEvent = viewModel::onEvent,
+							navController = navController
+						)
+
+					} else {
+
+						TestBox(
+							"Rezept nicht gefunden"
+						) {
+							navController.popBackStack()
+						}
+					}
+				}
 				//Einkaufslisten
 				composable(route = NavDestination.Einkaufslisten.route) {
 					val viewModel: EinkaufslistenViewModel = hiltViewModel()
@@ -327,7 +381,9 @@ fun TestBox(name: String, onNavigationIconClick: () -> Unit = {}) {
 		modifier = Modifier.padding(bottom = navBarHeight),
 		topBar = {
 			DashboardTopAppBar(
-				title = name,
+				title = {
+					Text(name)
+				},
 				showNavigationIcon = false,
 				onNavigationIconClick = onNavigationIconClick
 			)
@@ -350,7 +406,7 @@ fun TestBox(name: String, onNavigationIconClick: () -> Unit = {}) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardTopAppBar(
-	title: String,
+	title: @Composable () -> Unit,
 	showNavigationIcon: Boolean = true,
 	onNavigationIconClick: (() -> Unit)? = null,
 	navigationIcon: @Composable () -> Unit = { // Default navigation icon
@@ -367,12 +423,7 @@ fun DashboardTopAppBar(
 )
 {
 	TopAppBar(
-		title = {
-			Text(
-				text = title,
-				style = MaterialTheme.typography.headlineSmall
-			)
-		},
+		title = title,
 		navigationIcon = if (onNavigationIconClick != null || showNavigationIcon) navigationIcon else {
 			{}
 		},
@@ -388,6 +439,10 @@ fun DashboardTopAppBar(
 @Composable
 fun DashboardTopAppBarPreview() {
 	SmartShoppingTheme {
-		DashboardTopAppBar("Test")
+		DashboardTopAppBar(
+			title = {
+				Text("Test")
+			}
+		)
 	}
 }

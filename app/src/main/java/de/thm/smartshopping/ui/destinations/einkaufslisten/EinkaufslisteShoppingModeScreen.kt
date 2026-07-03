@@ -173,7 +173,9 @@ fun EinkaufslistenShoppingModeScreen(
 		modifier = Modifier.padding(bottom = 20.dp),
 		topBar = {
 			DashboardTopAppBar(
-				title = "${state.einkaufsliste?.name} 🛒",
+				title = {
+					Text("${state.einkaufsliste?.name} 🛒")
+				},
 				showNavigationIcon = true,
 				navigationIcon = {
 					IconButton(
@@ -334,7 +336,7 @@ fun EinkaufslistenShoppingModeScreen(
 
 	if (state.showEditArtikelMenu != null) {
 		EinkaufslisteEditArtikelSheet(
-			sheetState = sheetAddArtikelState,
+			sheetState = sheetEditArtikelState,
 			einkaufsArtikel = state.showEditArtikelMenu,
 			onConfirmed = { einkaufsArtikel ->
 				onEvent(EinkaufslistenAnsichtEvent.AddEinkaufsArtikel(einkaufsArtikel))

@@ -25,32 +25,69 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import de.thm.smartshopping.DashboardTopAppBar
-import de.thm.smartshopping.methods.navBarHeight // Assuming you have this
+import de.thm.smartshopping.methods.navBarHeight
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptCard
-import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptMock
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.FloatingActionButton
-
-// Mock data for the screen
-val mockRezepteListe = List(10) { index ->
-	RezeptMock(id = (index + 1).toString(), name = "Rezept Nummer ${index + 1}")
-}
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import de.thm.smartshopping.data.Rezept
+import de.thm.smartshopping.ui.composables.SearchTopBar
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptCreateSheet
+import de.thm.smartshopping.ui.destinations.rezepte.events.RezepteEvent
+import de.thm.smartshopping.ui.destinations.rezepte.states.RezepteScreenState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RezepteScreen(
-	// For a mockup, state and events might not be strictly necessary
-	// but you can add them later if needed.
-	// state: RezepteScreenState, (Define this if you expand)
-	// onEvent: (RezepteEvent) -> Unit, (Define this if you expand)
-	navController: NavController,
+	state: RezepteScreenState,
+	onEvent: (RezepteEvent) -> Unit,
+	navController: NavController
 ) {
+
+	var isSearching by remember {
+		mutableStateOf(false)
+	}
+
+	var searchText by remember {
+		mutableStateOf("")
+	}
+
+	val scope = rememberCoroutineScope()
+
+	val createSheetState =
+		rememberModalBottomSheetState(
+			skipPartiallyExpanded = true
+		)
+
+	LaunchedEffect(state.showCreateSheet) {
+		scope.launch {
+
+			if (state.showCreateSheet) {
+				createSheetState.show()
+			} else {
+
+				if (createSheetState.isVisible) {
+					createSheetState.hide()
+				}
+			}
+		}
+	}
+
 	Scaffold(
 		floatingActionButton = {
 			FloatingActionButton(
 				onClick = {
-					// TODO Rezept erstellen
+					onEvent(
+						RezepteEvent.ShowCreateSheet(true)
+					)
 				}
 			) {
 				Icon(
@@ -61,18 +98,54 @@ fun RezepteScreen(
 		},
 		modifier = Modifier.padding(bottom = navBarHeight), // If you use a custom bottom nav bar
 		topBar = {
-			DashboardTopAppBar( // Reusing your existing TopAppBar
-				title = "Rezepte",
+			DashboardTopAppBar(
+				title = {
+					if (!isSearching) {
+						Text("Rezepte")
+					}
+				},
 				showNavigationIcon = false, // Or true if you want a back button, handled by NavController
 				actions = {
-					IconButton(onClick = { /* TODO: Search Action */ }) {
-						Icon(Icons.Filled.Search, contentDescription = "Rezepte durchsuchen")
+					SearchTopBar(
+						searchText = searchText,
+						placeholder = "Rezepte suchen",
+
+						onSearchTextChange = {
+							searchText = it
+						},
+
+						onClose = {
+							searchText = ""
+							isSearching = false
+						}
+					)
+
+					if (!isSearching) {
+						IconButton(
+							onClick = {
+								isSearching = true
+							}
+						) {
+							Icon(
+								Icons.Default.Search,
+								contentDescription = "Suche"
+							)
+						}
 					}
 				}
 			)
 		}
 	) { paddingValues ->
-		if (mockRezepteListe.isEmpty()) {
+		val gefilterteRezepte =
+			state.rezepte.filter {
+				searchText.isBlank() ||
+						it.name.contains(
+							searchText,
+							ignoreCase = true
+						)
+			}
+
+		if (state.rezepte.isEmpty()) {
 			Box(
 				modifier = Modifier
 					.padding(paddingValues)
@@ -99,6 +172,48 @@ fun RezepteScreen(
 					)
 				}
 			}
+		} else if (gefilterteRezepte.isEmpty()) {
+			Box(
+
+				modifier = Modifier.fillMaxSize(),
+
+				contentAlignment = Alignment.Center
+
+			) {
+
+				Column(
+
+					horizontalAlignment = Alignment.CenterHorizontally
+
+				) {
+
+					Text(
+
+						text = "🔍",
+
+						style = MaterialTheme.typography.headlineLarge
+
+					)
+
+					Text(
+
+						text = "Keine Rezepte gefunden",
+
+						style = MaterialTheme.typography.headlineSmall
+
+					)
+
+					Text(
+
+						text = "Versuche einen anderen Suchbegriff",
+
+						style = MaterialTheme.typography.bodyMedium
+
+					)
+
+				}
+
+			}
 		} else {
 			LazyVerticalGrid(
 				columns = GridCells.Fixed(2), // Two items per row
@@ -110,20 +225,48 @@ fun RezepteScreen(
 				horizontalArrangement = Arrangement.spacedBy(12.dp) // Space between columns
 			) {
 				items(
-					items = mockRezepteListe,
+					items = gefilterteRezepte,
 					key = { it.id }
 				) { rezept ->
 					RezeptCard(
 						rezept = rezept,
 						onClick = {
-							// TODO: Navigate to rezept details screen
-							// navController.navigate("rezept_details/${rezept.id}")
-							println("Clicked on ${rezept.name}")
+							println("Navigiere zu Rezept: ${rezept.id}")
+							navController.navigate(
+								"rezept_details/${rezept.id}"
+							)
 						}
 					)
 				}
 			}
 		}
+	}
+
+	if (state.showCreateSheet) {
+
+		RezeptCreateSheet(
+			sheetState = createSheetState,
+
+			onDismiss = {
+				onEvent(
+					RezepteEvent.ShowCreateSheet(false)
+				)
+			},
+
+			onCreateConfirmed = { name, beschreibung, zeit ->
+
+				onEvent(
+					RezepteEvent.CreateRezept(
+						Rezept(
+							id = System.currentTimeMillis().toString(),
+							name = name,
+							beschreibung = beschreibung,
+							zubereitungszeit = zeit
+						)
+					)
+				)
+			}
+		)
 	}
 }
 
@@ -132,6 +275,21 @@ fun RezepteScreen(
 fun RezepteScreenPreview() {
 	SmartShoppingTheme {
 		RezepteScreen(
+			state = RezepteScreenState(
+				rezepte = listOf(
+					Rezept(
+						id = "1",
+						name = "Pfannkuchen",
+						zubereitungszeit = 15
+					),
+					Rezept(
+						id = "2",
+						name = "Spaghetti Bolognese",
+						zubereitungszeit = 30
+					)
+				)
+			),
+			onEvent = {},
 			navController = rememberNavController()
 		)
 	}

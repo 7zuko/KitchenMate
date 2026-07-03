@@ -28,18 +28,12 @@ import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.R
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import androidx.compose.material3.Surface
-
-// Mock data class for preview and structure
-data class RezeptMock(
-	val id: String,
-	val name: String,
-	val imageUrl: Int? = null // Using Int for drawable resource ID
-)
+import de.thm.smartshopping.data.Rezept
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RezeptCard(
-	rezept: RezeptMock,
+	rezept: Rezept,
 	modifier: Modifier = Modifier,
 	onClick: () -> Unit = {}
 ) {
@@ -67,7 +61,9 @@ fun RezeptCard(
 				contentAlignment = Alignment.Center
 			) {
 				Image(
-					painter = painterResource(id = rezept.imageUrl ?: R.drawable.ic_placeholder_recipe), // Replace with your placeholder
+					painter = painterResource(
+						id = R.drawable.ic_placeholder_recipe
+					),
 					contentDescription = rezept.name,
 					contentScale = ContentScale.Crop,
 					modifier = Modifier.fillMaxSize()
@@ -86,7 +82,11 @@ fun RezeptCard(
 						vertical = 6.dp
 					),
 
-					text = "⏱ 25 Min",
+					text =
+						if (rezept.zubereitungszeit > 0)
+							"⏱ ${rezept.zubereitungszeit} Min"
+						else
+							"⏱ Unbekannt",
 					style = MaterialTheme.typography.bodySmall
 				)
 			}
@@ -114,7 +114,7 @@ fun RezeptCard(
 fun RezeptCardPreview() {
 	SmartShoppingTheme {
 		RezeptCard(
-			rezept = RezeptMock(id = "1", name = "Sehr Leckerer Kuchen mit vielen Zutaten")
+			rezept = Rezept(id = "1", name = "Sehr Leckerer Kuchen mit vielen Zutaten")
 		)
 	}
 }

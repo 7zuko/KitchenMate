@@ -112,7 +112,7 @@ fun VorratScreen(
 					currentPanelVisibleHeightPx = newHeight
 					return Offset(0f, consumedY / 0.6f)
 				}
-				//Condition 2: Hiding the panel by pushing it up (e.g. when its partially revealed)
+				//Condition 2: Hiding the panel by pushing it up  (e.g. when its partially revealed)
 				if (currentPanelVisibleHeightPx > 0 && available.y < 0 && source == NestedScrollSource.Drag && !showActionsPanelFully) {
 					val newHeight = (currentPanelVisibleHeightPx + available.y)
 						.coerceIn(0f, actionsPanelMaxHeightPx)
@@ -190,7 +190,9 @@ fun VorratScreen(
 	Scaffold(
 		topBar = {
 			DashboardTopAppBar(
-				title = "Vorrat",
+				title = {
+					Text("Vorrat")
+				},
 				showNavigationIcon = false,
 				actions = {
 					IconButton(onClick = { println("Search clicked") }) {

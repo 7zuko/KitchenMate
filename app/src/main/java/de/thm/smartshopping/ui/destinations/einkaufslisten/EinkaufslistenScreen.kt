@@ -37,11 +37,17 @@ import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import kotlinx.coroutines.launch
 import java.util.Date
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.dp
+import de.thm.smartshopping.ui.composables.SearchTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,20 +116,42 @@ fun EinkaufslistenScreen(
 		modifier = Modifier.padding(bottom = navBarHeight),
 		topBar = {
 			DashboardTopAppBar(
-				title = if (isSearching) "" else "Einkaufslisten",
+				title = {
+					if (isSearching) {
+						SearchTopBar(
+							searchText = searchText,
+							placeholder = "Einkaufsliste suchen",
+							onSearchTextChange = {
+								searchText = it
+							},
+							onClose = {
+								searchText = ""
+								isSearching = false
+							}
+						)
+					} else {
+						Text(
+							text = "Einkaufslisten",
+							style = MaterialTheme.typography.headlineSmall
+						)
+
+					}
+
+				},
 				showNavigationIcon = false,
 				actions = {
 					if (isSearching) {
-						OutlinedTextField(
-							value = searchText,
-							onValueChange = {
-								searchText = it
-							},
-							placeholder = {
-								Text("Suchen...")
-							},
-							singleLine = true
-						)
+						IconButton(
+							onClick = {
+								searchText = ""
+								isSearching = false
+							}
+						) {
+							Icon(
+								Icons.Default.Close,
+								contentDescription = "Suche schließen"
+							)
+						}
 					} else {
 						IconButton(
 							onClick = {
@@ -190,14 +218,24 @@ fun EinkaufslistenScreen(
 				} else {
 					val filteredListen =
 						state.einkaufslisten.filter {
-
 							searchText.isBlank() ||
-
 									it.name.contains(
 										searchText,
 										ignoreCase = true
 									)
 						}
+
+					if (filteredListen.isEmpty()) {
+						Box(
+							modifier = Modifier.fillMaxSize(),
+							contentAlignment = Alignment.Center
+						) {
+							Text(
+								text = "Keine Einkaufsliste gefunden",
+								style = MaterialTheme.typography.bodyLarge
+							)
+						}
+					}
 
 					LazyColumn(
 						state = listState,

@@ -172,7 +172,9 @@ fun EinkaufslistenAnsicht(
 		topBar = {
 			if (state.isInSelectionMode) {
 				DashboardTopAppBar(
-					title = "${state.selectedArtikelIds.size} ausgewählt",
+					title = {
+						Text("${state.selectedArtikelIds.size} ausgewählt")
+					},
 					showNavigationIcon = true,
 					navigationIcon = {
 						IconButton(onClick = { onEvent(EinkaufslistenAnsichtEvent.ExitSelectionMode) }) {
@@ -192,7 +194,9 @@ fun EinkaufslistenAnsicht(
 				)
 			} else {
 				DashboardTopAppBar(
-					title = state.einkaufsliste?.name ?: "",
+					title = {
+						Text(state.einkaufsliste?.name ?: "")
+					},
 					showNavigationIcon = true,
 					onNavigationIconClick = {
 						if (navController.previousBackStackEntry?.destination?.route == "einkaufslisten_shoppingmode/{einkaufslisteId}") {
