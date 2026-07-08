@@ -57,14 +57,27 @@ import kotlinx.coroutines.launch
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
 import de.thm.smartshopping.ui.composables.SearchTopBar
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -168,6 +181,7 @@ fun ArtikelVerwaltungScreen(
 			) {
 				FloatingActionButton(
 					onClick = {
+						onEvent(ArtikelVerwaltungEvent.SetCurrentArtikel(null))
 						onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(true))
 					}
 				) {
@@ -278,7 +292,10 @@ fun ArtikelVerwaltungScreen(
 										items = kategorieGruppe.artikelListe,
 										key = { it.id }
 									) { artikel ->
-										ArtikelZeile(artikel = artikel)
+										ArtikelZeile(
+											artikel = artikel,
+											onEvent = onEvent
+											)
 									}
 								}
 							}
@@ -293,7 +310,10 @@ fun ArtikelVerwaltungScreen(
 								items = gefilterteArtikelOhneKategorie,
 								key = { artikel -> "ohne_kat_artikel_${artikel.id}" }
 							) { artikel ->
-								ArtikelZeile(artikel = artikel)
+								ArtikelZeile(
+									artikel = artikel,
+									onEvent = onEvent
+								)
 							}
 						}
 					}
@@ -307,6 +327,7 @@ fun ArtikelVerwaltungScreen(
 
 		ArtikelVerwaltungAddArtikelSheet(
 			sheetState = sheetAddArtikelState,
+			currentArtikel = state.currentArtikel,
 			allArtikel = state.artikelListe,
 			allKategorien = state.allKategorien,
 			onEvent = onEvent
@@ -331,52 +352,203 @@ fun ArtikelVerwaltungScreenPreview() {
 
 @Composable
 fun ArtikelZeile(
-	artikel: Artikel
+	artikel: Artikel,
+	onEvent: (ArtikelVerwaltungEvent) -> Unit
 ) {
+	var expanded by remember {
+		mutableStateOf(false)
+	}
+
 	ElevatedCard(
 		modifier = Modifier
 			.fillMaxWidth()
-			.padding(horizontal = 12.dp, vertical = 6.dp)
+			.padding(horizontal = 16.dp, vertical = 8.dp)
 			.clickable { },
 
-		shape = RoundedCornerShape(20.dp),
+		shape = RoundedCornerShape(28.dp),
+
+		colors = CardDefaults.elevatedCardColors(
+			containerColor = MaterialTheme.colorScheme.surface
+		),
 
 		elevation = CardDefaults.elevatedCardElevation(
-			defaultElevation = 3.dp
+			defaultElevation = 6.dp
 		)
 	) {
 
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(18.dp),
-
-			verticalAlignment = Alignment.CenterVertically
+				.padding(24.dp),
+			verticalAlignment = Alignment.Top
 		) {
 
-			Text(
-				text = "🥕",
-				fontSize = 24.sp
-			)
+			Box(
+				modifier = Modifier
+					.size(72.dp)
+					.background(
+						MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
+						CircleShape
+					),
+				contentAlignment = Alignment.Center
+			) {
+				Text(
+					text = artikel.emoji,
+					fontSize = 38.sp
+				)
+			}
 
-			Spacer(modifier = Modifier.width(12.dp))
+			Spacer(modifier = Modifier.width(20.dp))
 
 			Column(
 				modifier = Modifier.weight(1f)
 			) {
 
-				Text(
-					text = artikel.name,
-					style = MaterialTheme.typography.titleLarge
-				)
-
-				artikel.einheit?.let {
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					verticalAlignment = Alignment.CenterVertically
+				) {
 
 					Text(
-						text = it,
-						style = MaterialTheme.typography.bodyMedium,
-						color = MaterialTheme.colorScheme.onSurfaceVariant
+						text = artikel.name,
+						style = MaterialTheme.typography.titleLarge,
+						modifier = Modifier.weight(1f)
 					)
+
+					Box {
+
+						IconButton(
+							onClick = {
+								expanded = true
+							}
+						) {
+							Icon(
+								Icons.Default.MoreVert,
+								contentDescription = "Menü"
+							)
+						}
+
+						DropdownMenu(
+							expanded = expanded,
+							onDismissRequest = {
+								expanded = false
+							},
+							containerColor = MaterialTheme.colorScheme.surface
+						) {
+
+							DropdownMenuItem(
+								text = { Text("Bearbeiten") },
+								onClick = {
+									expanded = false
+									onEvent(ArtikelVerwaltungEvent.SetCurrentArtikel(artikel))
+									onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(true))
+								}
+							)
+
+							DropdownMenuItem(
+								text = { Text("Emoji ändern") },
+								onClick = {
+									expanded = false
+								}
+							)
+
+							DropdownMenuItem(
+								text = { Text("Kategorie ändern") },
+								onClick = {
+									expanded = false
+								}
+							)
+
+							DropdownMenuItem(
+								text = { Text("Löschen") },
+								onClick = {
+									expanded = false
+									onEvent(
+										ArtikelVerwaltungEvent.DeleteArtikel(artikel)
+									)
+								}
+							)
+						}
+					}
+				}
+
+
+				Spacer(Modifier.height(10.dp))
+
+				HorizontalDivider(
+					thickness = 2.dp,
+					color = MaterialTheme.colorScheme.outlineVariant
+				)
+
+				Spacer(Modifier.height(16.dp))
+
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.SpaceBetween
+				) {
+
+					Row(
+						verticalAlignment = Alignment.CenterVertically
+					) {
+
+						Text(
+							text = "⚖️",
+							fontSize = 20.sp
+						)
+
+						Spacer(Modifier.width(8.dp))
+
+						Column {
+
+							Text(
+								text = "Einheit",
+								style = MaterialTheme.typography.labelSmall,
+								color = MaterialTheme.colorScheme.onSurfaceVariant
+							)
+
+							Text(
+								text = artikel.einheit ?: "-",
+								style = MaterialTheme.typography.titleMedium
+							)
+						}
+					}
+
+					artikel.kategorie?.let {
+
+						ElevatedCard(
+							shape = RoundedCornerShape(50),
+
+							colors = CardDefaults.elevatedCardColors(
+								containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+							),
+
+							elevation = CardDefaults.elevatedCardElevation(
+								defaultElevation = 0.dp
+							)
+						) {
+
+							Row(
+								modifier = Modifier.padding(
+									horizontal = 14.dp,
+									vertical = 8.dp
+								),
+								verticalAlignment = Alignment.CenterVertically
+							) {
+
+								Text(
+									text = "📁"
+								)
+
+								Spacer(Modifier.width(6.dp))
+
+								Text(
+									text = it.name,
+									style = MaterialTheme.typography.labelLarge
+								)
+							}
+						}
+					}
 				}
 			}
 		}
@@ -392,8 +564,10 @@ fun ArtikelZeilePreview() {
 				id = "1",
 				name = "Milch",
 				kategorie = null,
-				einheit = "Liter"
-			)
+				einheit = "Liter",
+				emoji = "🥛"
+			),
+			onEvent = {}
 		)
 	}
 }

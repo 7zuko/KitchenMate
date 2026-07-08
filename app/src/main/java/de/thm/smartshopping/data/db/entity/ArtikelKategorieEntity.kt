@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class ArtikelKategorieEntity(
 	@PrimaryKey
 	val id: String,
-	var name: String
+	var name: String,
+	val emoji: String = "📂"
 )

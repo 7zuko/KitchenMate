@@ -54,7 +54,8 @@ fun Artikel.toEntity(): ArtikelEntity {
 		id = this.id,
 		name = this.name,
 		einheit = this.einheit,
-		kategorieId = this.kategorie?.id
+		kategorieId = this.kategorie?.id,
+		emoji = this.emoji
 	)
 }
 
@@ -63,21 +64,24 @@ fun ArtikelEntity.toDomain(artikelKategorie: ArtikelKategorie?): Artikel {
 		id = this.id,
 		name = this.name,
 		kategorie = artikelKategorie,
-		einheit = this.einheit
+		einheit = this.einheit,
+		emoji = this.emoji
 	)
 }
 
 fun ArtikelKategorie.toEntity(): ArtikelKategorieEntity {
 	return ArtikelKategorieEntity(
 		id = this.id,
-		name = this.name
+		name = this.name,
+		emoji = this.emoji
 	)
 }
 
 fun ArtikelKategorieEntity.toDomain(): ArtikelKategorie {
 	return ArtikelKategorie(
 		id = this.id,
-		name = this.name
+		name = this.name,
+		emoji = this.emoji
 	)
 }
 

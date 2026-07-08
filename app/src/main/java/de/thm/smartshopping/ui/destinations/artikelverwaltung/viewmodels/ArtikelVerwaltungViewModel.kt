@@ -42,9 +42,35 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 
 	fun onEvent(event: ArtikelVerwaltungEvent) {
 		when (event) {
-			is ArtikelVerwaltungEvent.DeleteArtikel -> TODO()
+			is ArtikelVerwaltungEvent.DeleteArtikel -> {
+				viewModelScope.launch {
+					shoppingRepository.deleteArtikel(event.artikel)
+				}
+			}
 
-			is ArtikelVerwaltungEvent.EditArtikel -> TODO()
+			is ArtikelVerwaltungEvent.ClearCurrentArtikel -> {
+				_state.update {
+					it.copy(currentArtikel = null)
+				}
+			}
+
+			is ArtikelVerwaltungEvent.EditArtikel -> {
+				_state.update {
+					it.copy(
+						currentArtikel = event.artikel,
+						showAddArtikelMenu = true
+					)
+				}
+			}
+
+			is ArtikelVerwaltungEvent.SetCurrentArtikel -> {
+				_state.update {
+					it.copy(
+						currentArtikel = event.artikel,
+						showAddArtikelMenu = event.artikel != null
+					)
+				}
+			}
 
 			ArtikelVerwaltungEvent.GetAllKategorien -> {
 			viewModelScope.launch {
@@ -93,7 +119,9 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 					it.copy(showAddArtikelMenu = event.boolean)
 				}
 			}
-		}
+
+            else -> {}
+        }
 	}
 	private fun updateGruppierteArtikel(alleArtikel: List<Artikel>, alleKategorien: List<ArtikelKategorie>) {
 		val artikelMitKategorie = alleArtikel.filter { it.kategorie != null }

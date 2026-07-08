@@ -43,6 +43,7 @@ import java.util.Locale
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 
 private enum class ActionState {
 	Main,
@@ -165,7 +166,7 @@ fun EinkaufslisteAddArtikelSheet(
 						ExposedDropdownMenuBox(
 							modifier = Modifier.fillMaxWidth(),
 							expanded = expandedDropdown,
-							onExpandedChange = { expandedDropdown = !expandedDropdown }
+							onExpandedChange = { expandedDropdown = !expandedDropdown },
 						) {
 							OutlinedTextField(
 								modifier = Modifier
@@ -194,7 +195,12 @@ fun EinkaufslisteAddArtikelSheet(
 									DropdownMenuItem(
 										text = { Text(if (filterText.isNotBlank()) "Keine Artikel gefunden" else "Keine Artikel vorhanden") },
 										onClick = {},
-										enabled = false
+										enabled = false,
+										colors = MenuDefaults.itemColors(
+
+											textColor = MaterialTheme.colorScheme.onSurface
+
+										),
 									)
 								} else {
 									HorizontalDivider()
@@ -205,7 +211,12 @@ fun EinkaufslisteAddArtikelSheet(
 												selectedArtikel = artikel
 												filterText = artikel.name
 												expandedDropdown = false
-											}
+											},
+											colors = MenuDefaults.itemColors(
+
+												textColor = MaterialTheme.colorScheme.onSurface
+
+											),
 										)
 										HorizontalDivider()
 									}

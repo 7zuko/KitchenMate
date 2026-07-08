@@ -7,14 +7,27 @@ sealed interface ArtikelVerwaltungEvent {
 	data class SetEnterTransitionFinished(val boolean: Boolean) : ArtikelVerwaltungEvent
 
 	data class SaveArtikel(val artikel: Artikel) : ArtikelVerwaltungEvent
+
 	data class EditArtikel(val artikel: Artikel) : ArtikelVerwaltungEvent
+
+	data class SetCurrentArtikel(val artikel: Artikel?) : ArtikelVerwaltungEvent
 	data class DeleteArtikel(val artikel: Artikel) : ArtikelVerwaltungEvent
 
 	data class SaveKategorie(val kategorie: ArtikelKategorie) : ArtikelVerwaltungEvent
+
+	object ClearCurrentArtikel : ArtikelVerwaltungEvent
 
 	object GetAllKategorien : ArtikelVerwaltungEvent
 
 	data class OnKategorieToggle(val kategorieId: String) : ArtikelVerwaltungEvent
 
 	data class ShowAddArtikelMenu(val boolean: Boolean) : ArtikelVerwaltungEvent
+
+	data class ToggleArtikelSelection(val artikelId: String) : ArtikelVerwaltungEvent
+
+	data class LongPressArtikel(val artikelId: String) : ArtikelVerwaltungEvent
+
+	object ClearSelection : ArtikelVerwaltungEvent
+
+	object DeleteSelectedArtikel : ArtikelVerwaltungEvent
 }

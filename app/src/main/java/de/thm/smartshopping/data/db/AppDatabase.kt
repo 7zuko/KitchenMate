@@ -27,7 +27,7 @@ import java.util.UUID
 		ArtikelKategorieEntity::class,
 		EinkaufsArtikelCrossRef::class
 	],
-	version = 1,
+	version = 3,
 	exportSchema = true
 )
 @TypeConverters(
@@ -83,7 +83,8 @@ abstract class AppDatabase: RoomDatabase() {
 			Log.d("AppDatabaseCallback", "Starting data population within populateDatabase...")
 
 			// --- Sample Categories ---
-			val katIdObstGemuese = UUID.randomUUID().toString()
+			val katIdObst = UUID.randomUUID().toString()
+			val katIdGemuese = UUID.randomUUID().toString()
 			val katIdMilchprodukte = UUID.randomUUID().toString()
 			val katIdBackwaren = UUID.randomUUID().toString()
 			val katIdFleisch = UUID.randomUUID().toString()
@@ -95,23 +96,26 @@ abstract class AppDatabase: RoomDatabase() {
 
 
 			val categories = listOf(
-				ArtikelKategorieEntity(id = katIdObstGemuese, name = "Obst & Gemüse"),
-				ArtikelKategorieEntity(id = katIdMilchprodukte, name = "Milchprodukte & Eier"),
-				ArtikelKategorieEntity(id = katIdBackwaren, name = "Brot & Backwaren"),
-				ArtikelKategorieEntity(id = katIdFleisch, name = "Fleisch & Wurst"),
-				ArtikelKategorieEntity(id = katIdGetraenke, name = "Getränke"),
-				ArtikelKategorieEntity(id = katIdSuesswaren, name = "Süßwaren & Snacks"),
-				ArtikelKategorieEntity(id = katIdHaushalt, name = "Haushalt & Reinigung"),
-				ArtikelKategorieEntity(id = katIdKonserven, name = "Konserven & Fertiggerichte"),
-				ArtikelKategorieEntity(id = katIdTierbedarf, name = "Tierbedarf")
+				ArtikelKategorieEntity(id = katIdObst, name = "Obst", emoji = "\uD83C\uDF4E"),
+				ArtikelKategorieEntity(id = katIdGemuese, name = "Gemüse", emoji = "\uD83E\uDD55"),
+				ArtikelKategorieEntity(id = katIdMilchprodukte, name = "Eier & Milchprodukte", emoji = "\uD83E\uDD5B"),
+				ArtikelKategorieEntity(id = katIdBackwaren, name = "Backwaren", emoji = "\uD83E\uDD56"),
+				ArtikelKategorieEntity(id = katIdFleisch, name = "Fleisch", emoji = "\uD83E\uDD69"),
+				ArtikelKategorieEntity(id = katIdGetraenke, name = "Getränke", emoji = "\uD83E\uDD64"),
+				ArtikelKategorieEntity(id = katIdSuesswaren, name = "Süßwaren & Snacks", emoji = "\uD83C\uDF6B"),
+				ArtikelKategorieEntity(id = katIdHaushalt, name = "Haushalt", emoji = "\uD83E\uDDFD"),
+				ArtikelKategorieEntity(id = katIdKonserven, name = "Konserven & Fertiggerichte", emoji = "\uD83E\uDD6B"),
+				ArtikelKategorieEntity(id = katIdTierbedarf, name = "Tierbedarf", emoji = "\uD83D\uDC31")
 			)
 			artikelKategorieDao.insertAllArtikelKategorien(categories)
 			Log.d("AppDatabaseCallback", "${categories.size} categories inserted.")
 
 			// --- Sample Articles ---
-			// Obst & Gemüse
+			// Obst
 			val artikelIdApfel = UUID.randomUUID().toString()
 			val artikelIdBanane = UUID.randomUUID().toString()
+			val artikelIdOrangen = UUID.randomUUID().toString()
+			// Gemüse
 			val artikelIdTomate = UUID.randomUUID().toString()
 			val artikelIdGurke = UUID.randomUUID().toString()
 			val artikelIdPaprika = UUID.randomUUID().toString()
@@ -150,43 +154,45 @@ abstract class AppDatabase: RoomDatabase() {
 
 
 			val articles = listOf(
-				ArtikelEntity(id = artikelIdApfel, name = "Äpfel (Braeburn)", einheit = "Stk", kategorieId = katIdObstGemuese),
-				ArtikelEntity(id = artikelIdBanane, name = "Bananen (Fairtrade)", einheit = "Stk", kategorieId = katIdObstGemuese),
-				ArtikelEntity(id = artikelIdTomate, name = "Tomaten (Cherry)", einheit = "250g Schale", kategorieId = katIdObstGemuese),
-				ArtikelEntity(id = artikelIdGurke, name = "Salatgurke", einheit = "Stk", kategorieId = katIdObstGemuese),
-				ArtikelEntity(id = artikelIdPaprika, name = "Paprika-Mix (rot, gelb, grün)", einheit = "500g Netz", kategorieId = katIdObstGemuese),
-				ArtikelEntity(id = artikelIdZwiebel, name = "Zwiebeln (gelb)", einheit = "1kg Netz", kategorieId = katIdObstGemuese),
+				ArtikelEntity(id = artikelIdApfel, name = "Äpfel", einheit = "Stk", kategorieId = katIdObst, emoji = "\uD83C\uDF4E"),
+				ArtikelEntity(id = artikelIdBanane, name = "Bananen", einheit = "Stk", kategorieId = katIdObst, emoji = "\uD83C\uDF4C"),
+				ArtikelEntity(id = artikelIdOrangen, name = "Orangen", einheit = "Stk", kategorieId= katIdObst, emoji = "\uD83C\uDF4A"),
 
-				ArtikelEntity(id = artikelIdMilch, name = "Frische Vollmilch (3.5%)", einheit = "1 Liter", kategorieId = katIdMilchprodukte),
-				ArtikelEntity(id = artikelIdJoghurt, name = "Naturjoghurt (1.5%)", einheit = "500g Becher", kategorieId = katIdMilchprodukte),
-				ArtikelEntity(id = artikelIdEier, name = "Eier (Größe L, Bio)", einheit = "6er Pack", kategorieId = katIdMilchprodukte),
-				ArtikelEntity(id = artikelIdKaese, name = "Gouda (in Scheiben)", einheit = "200g Packung", kategorieId = katIdMilchprodukte),
+				ArtikelEntity(id = artikelIdTomate, name = "Tomaten", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83C\uDF45"),
+				ArtikelEntity(id = artikelIdGurke, name = "Gurken", einheit = "Stk", kategorieId = katIdGemuese, emoji = "\uD83E\uDD52"),
+				ArtikelEntity(id = artikelIdPaprika, name = "Paprika", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83E\uDED1"),
+				ArtikelEntity(id = artikelIdZwiebel, name = "Zwiebelen", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83E\uDDC5"),
 
-				ArtikelEntity(id = artikelIdBrot, name = "Roggenmischbrot", einheit = "750g Laib", kategorieId = katIdBackwaren),
-				ArtikelEntity(id = artikelIdBroetchen, name = "Mehrkornbrötchen (zum Aufbacken)", einheit = "6er Pack", kategorieId = katIdBackwaren),
-				ArtikelEntity(id = artikelIdToast, name = "Vollkorntoast", einheit = "500g Packung", kategorieId = katIdBackwaren),
+				ArtikelEntity(id = artikelIdMilch, name = "Vollmilch (3.5%)", einheit = "Liter", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5B"),
+				ArtikelEntity(id = artikelIdJoghurt, name = "Joghurt (1.5%)", einheit = "Gramm", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5B"),
+				ArtikelEntity(id = artikelIdEier, name = "Eier (Größe S, Bio)", einheit = "Stk", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5A"),
+				ArtikelEntity(id = artikelIdKaese, name = "Gouda", einheit = "Gramm", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDDC0"),
 
-				ArtikelEntity(id = artikelIdHackfleisch, name = "Gemischtes Hackfleisch", einheit = "500g", kategorieId = katIdFleisch),
-				ArtikelEntity(id = artikelIdHaehnchen, name = "Hähnchenbrustfilet (Bio)", einheit = "400g", kategorieId = katIdFleisch),
-				ArtikelEntity(id = artikelIdWurst, name = "Salami (am Stück)", einheit = "250g", kategorieId = katIdFleisch),
+				ArtikelEntity(id = artikelIdBrot, name = "Brot", einheit = "Gramm", kategorieId = katIdBackwaren, emoji = "\uD83E\uDD56"),
+				ArtikelEntity(id = artikelIdBroetchen, name = "Aufbackbrötchen", einheit = "Stk", kategorieId = katIdBackwaren, emoji = "\uD83E\uDD56"),
+				ArtikelEntity(id = artikelIdToast, name = "Vollkorntoast", einheit = "Gramm", kategorieId = katIdBackwaren, emoji = "\uD83C\uDF5E"),
 
-				ArtikelEntity(id = artikelIdWasser, name = "Mineralwasser (Still)", einheit = "1.5L Flasche", kategorieId = katIdGetraenke),
-				ArtikelEntity(id = artikelIdCola, name = "Cola (Zero)", einheit = "1L Flasche", kategorieId = katIdGetraenke),
-				ArtikelEntity(id = artikelIdOrangensaft, name = "Orangensaft (100% Frucht)", einheit = "1 Liter", kategorieId = katIdGetraenke),
-				ArtikelEntity(id = artikelIdKaffee, name = "Kaffeebohnen (Crema)", einheit = "1kg Beutel", kategorieId = katIdGetraenke),
+				ArtikelEntity(id = artikelIdHackfleisch, name = "Hackfleisch", einheit = "Gramm", kategorieId = katIdFleisch, emoji = "\uD83E\uDD69"),
+				ArtikelEntity(id = artikelIdHaehnchen, name = "Hähnchenbrustfilet (Bio)", einheit = "Gramm", kategorieId = katIdFleisch, emoji = "\uD83C\uDF57"),
+				ArtikelEntity(id = artikelIdWurst, name = "Salami (am Stück)", einheit = "Gramm", kategorieId = katIdFleisch, emoji = "\uD83E\uDD69"),
 
-				ArtikelEntity(id = artikelIdSchokolade, name = "Edelbitterschokolade (70%)", einheit = "100g Tafel", kategorieId = katIdSuesswaren),
-				ArtikelEntity(id = artikelIdChips, name = "Kartoffelchips (Meersalz)", einheit = "175g Beutel", kategorieId = katIdSuesswaren),
-				ArtikelEntity(id = artikelIdGummibaerchen, name = "Gummibärchen", einheit = "200g Beutel", kategorieId = katIdSuesswaren),
+				ArtikelEntity(id = artikelIdWasser, name = "Mineralwasser (Still)", einheit = "Liter", kategorieId = katIdGetraenke, emoji = "\uD83D\uDEB0"),
+				ArtikelEntity(id = artikelIdCola, name = "Cola Zero", einheit = "Liter", kategorieId = katIdGetraenke, emoji = "\uD83E\uDD64"),
+				ArtikelEntity(id = artikelIdOrangensaft, name = "Apfelsaft", einheit = "Liter", kategorieId = katIdGetraenke, emoji = "\uD83E\uDDC3"),
+				ArtikelEntity(id = artikelIdKaffee, name = "Kaffeebohnen", einheit = "Gramm", kategorieId = katIdGetraenke, emoji = "☕\uFE0F"),
 
-				ArtikelEntity(id = artikelIdWaschmittel, name = "Waschmittel (Universal)", einheit = "20 WL", kategorieId = katIdHaushalt),
-				ArtikelEntity(id = artikelIdKlopapier, name = "Toilettenpapier (Recycling, 4-lagig)", einheit = "8 Rollen", kategorieId = katIdHaushalt),
-				ArtikelEntity(id = artikelIdSpuelmittel, name = "Spülmittel (Sensitiv)", einheit = "500ml Flasche", kategorieId = katIdHaushalt),
+				ArtikelEntity(id = artikelIdSchokolade, name = "Schokolade", einheit = "Gramm", kategorieId = katIdSuesswaren, emoji = "\uD83C\uDF6B"),
+				ArtikelEntity(id = artikelIdChips, name = "Chipspackung", einheit = "Stk", kategorieId = katIdSuesswaren, emoji = "\uD83E\uDD54"),
+				ArtikelEntity(id = artikelIdGummibaerchen, name = "Gummibärchen", einheit = "Gramm", kategorieId = katIdSuesswaren, emoji = "\uD83C\uDF6C"),
 
-				ArtikelEntity(id = artikelIdMais, name = "Mais (Dose)", einheit = "400g Dose", kategorieId = katIdKonserven),
-				ArtikelEntity(id = artikelIdThunfisch, name = "Thunfisch (in eigenem Saft)", einheit = "150g Dose", kategorieId = katIdKonserven),
+				ArtikelEntity(id = artikelIdWaschmittel, name = "Waschmittel", einheit = "", kategorieId = katIdHaushalt, emoji = "\uD83D\uDC5A"),
+				ArtikelEntity(id = artikelIdKlopapier, name = "Toilettenpapier", einheit = "Rollen", kategorieId = katIdHaushalt, emoji = "\uD83E\uDDFB"),
+				ArtikelEntity(id = artikelIdSpuelmittel, name = "Spülmittel", einheit = "ml", kategorieId = katIdHaushalt, emoji = "\uD83C\uDF7D\uFE0F"),
 
-				ArtikelEntity(id = artikelIdKatzenfutter, name = "Katzenfutter (Nass, Huhn)", einheit = "85g Beutel", kategorieId = katIdTierbedarf)
+				ArtikelEntity(id = artikelIdMais, name = "Mais", einheit = "Gramm", kategorieId = katIdKonserven, emoji = "\uD83E\uDD6B"),
+				ArtikelEntity(id = artikelIdThunfisch, name = "Thunfisch", einheit = "Gramm", kategorieId = katIdKonserven, emoji = "\uD83E\uDD6B"),
+
+				ArtikelEntity(id = artikelIdKatzenfutter, name = "Katzenfutter", einheit = "Gramm", kategorieId = katIdTierbedarf, emoji = "\uD83D\uDE3C")
 			)
 			artikelDao.insertAllArtikel(articles)
 			Log.d("AppDatabaseCallback", "${articles.size} articles inserted.")

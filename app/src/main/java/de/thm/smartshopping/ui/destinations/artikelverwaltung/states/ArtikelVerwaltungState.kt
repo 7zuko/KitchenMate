@@ -16,7 +16,9 @@ data class ArtikelVerwaltungState(
 	val isInSelectionMode: Boolean = false,
 	val selectedArtikelIds: Set<String> = emptySet(),
 
-	val isEnterTransitionFinished: Boolean = false
+	val isEnterTransitionFinished: Boolean = false,
+
+	val currentArtikel: Artikel? = null
 )
 
 data class KategorieMitArtikeln(

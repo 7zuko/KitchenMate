@@ -1,6 +1,7 @@
 package de.thm.smartshopping.ui.destinations.artikelverwaltung.composables
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -13,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -24,11 +27,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,9 +44,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.ui.composables.CustomModalSheet
+import de.thm.smartshopping.ui.composables.EmojiPicker
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import java.util.UUID
@@ -55,15 +63,43 @@ private enum class ActionState {
 @Composable
 fun ArtikelVerwaltungAddArtikelSheet(
 	sheetState: SheetState,
+	currentArtikel: Artikel?,
 	allArtikel: List<Artikel>,
 	allKategorien: List<ArtikelKategorie>,
 	onEvent: (ArtikelVerwaltungEvent) -> Unit
 ) {
+	var showEmojiPicker by remember {
+		mutableStateOf(false)
+	}
 	var currentSheetMode by remember { mutableStateOf(ActionState.Main) }
 
 	var name: String by remember { mutableStateOf("") }
 	var einheit: String by remember { mutableStateOf("") }
+	val standardEinheiten = listOf(
+		"Stück",
+		"Gramm",
+		"Kilogramm",
+		"Milliliter",
+		"Liter",
+		"Packung",
+		"Sack",
+		"Dose",
+		"Flasche",
+		"Kasten",
+		"Beutel",
+		"Rolle",
+		"Glas",
+		"Eigene Einheit..."
+	)
 
+	var expandedEinheit by remember {
+		mutableStateOf(false)
+	}
+
+	var eigeneEinheit by remember {
+		mutableStateOf(false)
+	}
+	var emoji: String by remember { mutableStateOf("🛒") }
 	var selectedKategorie: ArtikelKategorie? by remember { mutableStateOf(null) }
 
 	var expandedDropdown by remember { mutableStateOf(false) }
@@ -77,16 +113,34 @@ fun ArtikelVerwaltungAddArtikelSheet(
 		}
 	}
 
+	LaunchedEffect(currentArtikel) {
+		if (currentArtikel != null) {
+			name = currentArtikel.name
+			einheit = currentArtikel.einheit ?: ""
+			emoji = currentArtikel.emoji
+			selectedKategorie = currentArtikel.kategorie
+			filterText = currentArtikel.kategorie?.name ?: ""
+		}
+	}
 	var newKategorieName: String by remember { mutableStateOf("") }
 
 	CustomModalSheet(
-		title = if (currentSheetMode == ActionState.NewKategorie) {
-			"Neue Kategorie"
-		} else {
-			"Neuer Artikel"
+		title = when {
+			currentSheetMode == ActionState.NewKategorie ->
+				"Neue Kategorie"
+
+			currentArtikel != null ->
+				"Artikel bearbeiten"
+
+			else ->
+				"Neuer Artikel"
 		},
 		enableConfirmCancelButtons = true,
-		confirmButtonName = "Speichern",
+		confirmButtonName =
+			if (currentArtikel != null)
+				"Änderungen speichern"
+			else
+				"Speichern",
 		onConfirm = { closeAction ->
 			if (allArtikel.any { it.name.equals(name, true) } && currentSheetMode == ActionState.Main) {
 				currentSheetMode = ActionState.Exists
@@ -110,20 +164,22 @@ fun ArtikelVerwaltungAddArtikelSheet(
 		},
 		onConfirmAfterClose = {
 			val currentName = name.trim()
+
 			if (currentName.isNotBlank()) {
-				var newArtikel = Artikel(
-					id = UUID.randomUUID().toString(),
+
+				val artikel = Artikel(
+					id = currentArtikel?.id ?: UUID.randomUUID().toString(),
 					name = currentName,
+					kategorie = selectedKategorie,
+					einheit = einheit.ifBlank { null },
+					emoji = emoji
 				)
-				val currentSelectedKategorie = selectedKategorie
-				if (currentSelectedKategorie != null) {
-					newArtikel = newArtikel.copy(kategorie = currentSelectedKategorie)
+
+				if (currentArtikel != null) {
+					onEvent(ArtikelVerwaltungEvent.EditArtikel(artikel))
+				} else {
+					onEvent(ArtikelVerwaltungEvent.SaveArtikel(artikel))
 				}
-				val currentEinheit = einheit.trim()
-				if (currentEinheit.isNotBlank()) {
-					newArtikel = newArtikel.copy(einheit = currentEinheit)
-				}
-				onEvent(ArtikelVerwaltungEvent.SaveArtikel(newArtikel))
 			}
 		},
 		conditionConfirmEnabled = if (currentSheetMode == ActionState.NewKategorie) {
@@ -141,10 +197,13 @@ fun ArtikelVerwaltungAddArtikelSheet(
 		onDismissAfterClose = {
 			name = ""
 			einheit = ""
+			emoji = "🛒"
 			selectedKategorie = null
 			filterText = ""
 			expandedDropdown = false
 			newKategorieName = ""
+			onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(false))
+			onEvent(ArtikelVerwaltungEvent.ClearCurrentArtikel)
 			onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(false))
 		},
 		sheetState = sheetState
@@ -170,17 +229,135 @@ fun ArtikelVerwaltungAddArtikelSheet(
 
 						Spacer(Modifier.height(12.dp))
 
-						OutlinedTextField(
-							modifier = Modifier.fillMaxWidth(),
-							value = einheit,
-							onValueChange = { einheit = it },
-							label = { Text("Mengeneinheit (optional)") },
-							keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-							singleLine = true
-						)
+						ExposedDropdownMenuBox(
+							expanded = expandedEinheit,
+							onExpandedChange = {
+								expandedEinheit = !expandedEinheit
+							}
+						) {
+
+							OutlinedTextField(
+								modifier = Modifier
+									.fillMaxWidth()
+									.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+
+								value = einheit,
+
+								onValueChange = {},
+
+								readOnly = true,
+
+								label = {
+									Text("Mengeneinheit (optional)")
+								},
+
+								trailingIcon = {
+									ExposedDropdownMenuDefaults.TrailingIcon(
+										expanded = expandedEinheit
+									)
+								}
+							)
+
+							ExposedDropdownMenu(
+								expanded = expandedEinheit,
+								onDismissRequest = {
+									expandedEinheit = false
+								}
+							) {
+
+								standardEinheiten.forEach {
+
+									DropdownMenuItem(
+
+										text = {
+											Text(it)
+										},
+
+										colors = MenuDefaults.itemColors(
+
+											textColor = MaterialTheme.colorScheme.onSurface
+
+										),
+
+										onClick = {
+
+											expandedEinheit = false
+
+											if (it == "Eigene Einheit...") {
+
+												eigeneEinheit = true
+												einheit = ""
+
+											} else {
+
+												eigeneEinheit = false
+												einheit = it
+											}
+										}
+									)
+								}
+							}
+						}
+						if (eigeneEinheit) {
+
+							Spacer(Modifier.height(8.dp))
+
+							OutlinedTextField(
+								modifier = Modifier.fillMaxWidth(),
+
+								value = einheit,
+
+								onValueChange = {
+									einheit = it
+								},
+
+								label = {
+									Text("Eigene Einheit")
+								},
+
+								singleLine = true
+							)
+						}
 
 						Spacer(Modifier.height(12.dp))
+						OutlinedCard(
+							modifier = Modifier
+								.fillMaxWidth()
+								.clickable {
+									showEmojiPicker = true
+								}
+						) {
 
+							Row(
+								modifier = Modifier
+									.fillMaxWidth()
+									.padding(horizontal = 18.dp, vertical = 14.dp),
+
+								verticalAlignment = Alignment.CenterVertically
+							) {
+
+								Text(
+									text = "Emoji",
+									style = MaterialTheme.typography.bodyLarge,
+									modifier = Modifier.weight(1f)
+								)
+
+								Text(
+									text = emoji,
+									fontSize = 30.sp
+								)
+
+								Spacer(Modifier.width(12.dp))
+
+								Icon(
+									imageVector = Icons.Default.KeyboardArrowRight,
+									contentDescription = null,
+									tint = MaterialTheme.colorScheme.onSurfaceVariant
+								)
+							}
+						}
+
+						Spacer(Modifier.height(12.dp))
 						Row(
 							modifier = Modifier
 								.fillMaxWidth()
@@ -267,6 +444,19 @@ fun ArtikelVerwaltungAddArtikelSheet(
 			}
 		}
 	}
+	if (showEmojiPicker) {
+
+		EmojiPicker(
+			onEmojiSelected = {
+				emoji = it
+				showEmojiPicker = false
+			},
+
+			onDismiss = {
+				showEmojiPicker = false
+			}
+		)
+	}
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -284,6 +474,7 @@ fun ArtikelVerwaltungAddArtikelSheetPreview() {
 		Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
 			ArtikelVerwaltungAddArtikelSheet(
 				sheetState = sheetState,
+				currentArtikel = null,
 				allArtikel = emptyList(),
 				allKategorien = sampleKategorien,
 				onEvent = {}

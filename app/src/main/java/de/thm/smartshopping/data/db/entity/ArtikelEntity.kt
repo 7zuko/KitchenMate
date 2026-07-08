@@ -18,5 +18,6 @@ data class ArtikelEntity(
 	val id: String,
 	var name: String,
 	val einheit: String? = null,
-	val kategorieId: String? = null
+	val kategorieId: String? = null,
+	val emoji: String = "🛒"
 )

@@ -5,4 +5,5 @@ data class Artikel(
 	var name: String,
 	val kategorie: ArtikelKategorie? = null,
 	var einheit: String? = null,
+	var emoji: String = "🛒"
 )

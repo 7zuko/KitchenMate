@@ -289,4 +289,16 @@ class ShoppingRepository(
 		}
 	}
 
+	suspend fun deleteArtikel(artikel: Artikel) {
+		artikelDao.deleteArtikel(
+			ArtikelEntity(
+				id = artikel.id,
+				name = artikel.name,
+				einheit = artikel.einheit,
+				kategorieId = artikel.kategorie?.id,
+				emoji = artikel.emoji
+			)
+		)
+	}
+
 }
