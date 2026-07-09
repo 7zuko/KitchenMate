@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 
 @Composable
 fun SearchTopBar(
@@ -22,18 +24,26 @@ fun SearchTopBar(
     OutlinedTextField(
         value = searchText,
         onValueChange = onSearchTextChange,
+
         placeholder = {
             Text(placeholder)
         },
+
         singleLine = true,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth(),
+
+        shape = RoundedCornerShape(18.dp),
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(end = 12.dp, start = 12.dp)
+            .widthIn(max = 340.dp),
+
         trailingIcon = {
             IconButton(
                 onClick = onClose
             ) {
                 Icon(
-                    Icons.Default.Close,
+                    imageVector = Icons.Default.Close,
                     contentDescription = "Suche schließen"
                 )
             }

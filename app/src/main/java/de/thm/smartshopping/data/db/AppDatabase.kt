@@ -11,10 +11,15 @@ import de.thm.smartshopping.data.db.converters.DateConverter
 import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
 import de.thm.smartshopping.data.db.dao.EinkaufslisteDao
+import de.thm.smartshopping.data.db.dao.LagerbestandDao
 import de.thm.smartshopping.data.db.entity.ArtikelEntity
 import de.thm.smartshopping.data.db.entity.ArtikelKategorieEntity
 import de.thm.smartshopping.data.db.entity.EinkaufsArtikelCrossRef
 import de.thm.smartshopping.data.db.entity.EinkaufslisteEntity
+import de.thm.smartshopping.data.db.entity.RezeptZutatEntity
+import de.thm.smartshopping.data.db.entity.LagerbestandEntity
+import de.thm.smartshopping.data.db.dao.RezeptDao
+import de.thm.smartshopping.data.db.entity.RezeptEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,9 +30,12 @@ import java.util.UUID
 		EinkaufslisteEntity::class,
 		ArtikelEntity::class,
 		ArtikelKategorieEntity::class,
-		EinkaufsArtikelCrossRef::class
+		EinkaufsArtikelCrossRef::class,
+		RezeptEntity::class,
+		RezeptZutatEntity::class,
+		LagerbestandEntity::class
 	],
-	version = 3,
+	version = 6,
 	exportSchema = true
 )
 @TypeConverters(
@@ -40,6 +48,8 @@ abstract class AppDatabase: RoomDatabase() {
 	abstract fun einkaufslisteDao(): EinkaufslisteDao
 	abstract fun artikelDao(): ArtikelDao
 	abstract fun artikelKategorieDao(): ArtikelKategorieDao
+	abstract fun rezeptDao(): RezeptDao
+	abstract fun lagerbestandDao(): LagerbestandDao
 
 	@Volatile
 	private var INSTANCE: AppDatabase? = null
@@ -79,6 +89,8 @@ abstract class AppDatabase: RoomDatabase() {
 			val artikelKategorieDao = database.artikelKategorieDao()
 			val artikelDao = database.artikelDao()
 			val einkaufslisteDao = database.einkaufslisteDao()
+			val lagerbestandDao = database.lagerbestandDao()
+			val rezeptDao = database.rezeptDao()
 
 			Log.d("AppDatabaseCallback", "Starting data population within populateDatabase...")
 
@@ -197,6 +209,17 @@ abstract class AppDatabase: RoomDatabase() {
 			artikelDao.insertAllArtikel(articles)
 			Log.d("AppDatabaseCallback", "${articles.size} articles inserted.")
 
+
+			// --- Sample Rezepte ---
+			val rezeptIdSpaghetti = UUID.randomUUID().toString()
+			val rezeptIdBurger = UUID.randomUUID().toString()
+			val rezeptIdPancakes = UUID.randomUUID().toString()
+			val rezeptIdRuehrei = UUID.randomUUID().toString()
+			val rezeptIdSalat = UUID.randomUUID().toString()
+
+
+
+
 			// --- Sample Shopping Lists ---
 			val currentTimeMillis = System.currentTimeMillis()
 			val userDemoId = "demoUser123" // Example User ID
@@ -269,6 +292,211 @@ abstract class AppDatabase: RoomDatabase() {
 			)
 			einkaufslisteDao.insertAllEinkaufsArtikel(listArtikelCrossRefs)
 			Log.d("AppDatabaseCallback", "${listArtikelCrossRefs.size} list-article associations inserted.")
+
+			val lagerbestand = listOf(
+
+				LagerbestandEntity(
+					artikelId = artikelIdMilch,
+					menge = 2.0
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdKaese,
+					menge = 500.0
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdEier,
+					menge = 10.0
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdApfel,
+					menge = 6.0
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdBrot,
+					menge = 750.0
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdCola,
+					menge = 3.0
+				)
+
+			)
+
+			lagerbestand.forEach {
+
+				lagerbestandDao.upsertLagerbestand(it)
+
+			}
+
+			Log.d(
+				"AppDatabaseCallback",
+				"${lagerbestand.size} Lagerbestände eingefügt."
+			)
+
+			val demoRezepte = listOf(
+
+				RezeptEntity(
+					id = rezeptIdSpaghetti,
+					name = "Spaghetti Bolognese",
+					beschreibung = "Klassischer italienischer Pasta-Klassiker.",
+					zubereitungszeit = 35,
+					portionen = 4,
+					schwierigkeit = "Einfach",
+					kategorie = "Hauptgericht",
+					bildPfad = null
+				),
+
+				RezeptEntity(
+					id = rezeptIdBurger,
+					name = "Cheeseburger",
+					beschreibung = "Saftiger Burger mit Käse.",
+					zubereitungszeit = 25,
+					portionen = 2,
+					schwierigkeit = "Einfach",
+					kategorie = "Fast Food",
+					bildPfad = null
+				),
+
+				RezeptEntity(
+					id = rezeptIdPancakes,
+					name = "Pancakes",
+					beschreibung = "Perfekt zum Frühstück.",
+					zubereitungszeit = 20,
+					portionen = 2,
+					schwierigkeit = "Einfach",
+					kategorie = "Frühstück",
+					bildPfad = null
+				),
+
+				RezeptEntity(
+					id = rezeptIdRuehrei,
+					name = "Rührei",
+					beschreibung = "Schnelles Frühstück.",
+					zubereitungszeit = 10,
+					portionen = 1,
+					schwierigkeit = "Einfach",
+					kategorie = "Frühstück",
+					bildPfad = null
+				),
+
+				RezeptEntity(
+					id = rezeptIdSalat,
+					name = "Gemischter Salat",
+					beschreibung = "Frischer Salat.",
+					zubereitungszeit = 15,
+					portionen = 2,
+					schwierigkeit = "Einfach",
+					kategorie = "Salat",
+					bildPfad = null
+				)
+
+			)
+
+			demoRezepte.forEach {
+
+				rezeptDao.insertRezept(it)
+
+			}
+
+			val rezeptZutaten = listOf(
+
+				// ---------- Spaghetti ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSpaghetti,
+					artikelId = artikelIdHackfleisch,
+					menge = 500.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSpaghetti,
+					artikelId = artikelIdTomate,
+					menge = 400.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSpaghetti,
+					artikelId = artikelIdZwiebel,
+					menge = 1.0
+				),
+
+				// ---------- Burger ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdBurger,
+					artikelId = artikelIdHackfleisch,
+					menge = 300.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdBurger,
+					artikelId = artikelIdKaese,
+					menge = 150.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdBurger,
+					artikelId = artikelIdBrot,
+					menge = 2.0
+				),
+
+				// ---------- Pancakes ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdPancakes,
+					artikelId = artikelIdMilch,
+					menge = 300.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdPancakes,
+					artikelId = artikelIdEier,
+					menge = 2.0
+				),
+
+				// ---------- Rührei ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdRuehrei,
+					artikelId = artikelIdEier,
+					menge = 3.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdRuehrei,
+					artikelId = artikelIdKaese,
+					menge = 50.0
+				),
+
+				// ---------- Salat ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSalat,
+					artikelId = artikelIdTomate,
+					menge = 200.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSalat,
+					artikelId = artikelIdGurke,
+					menge = 1.0
+				)
+
+			)
+
+			rezeptDao.insertRezeptZutaten(
+				rezeptZutaten
+			)
+
+			Log.d(
+				"AppDatabaseCallback",
+				"${rezeptZutaten.size} Rezeptzutaten eingefügt."
+			)
 
 			Log.i("AppDatabaseCallback", "DATABASE POPULATED SUCCESSFULLY WITH SAMPLE DATA.")
 		}

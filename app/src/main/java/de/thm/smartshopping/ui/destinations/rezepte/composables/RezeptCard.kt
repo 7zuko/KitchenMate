@@ -29,6 +29,8 @@ import de.thm.smartshopping.R
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import androidx.compose.material3.Surface
 import de.thm.smartshopping.data.Rezept
+import coil.compose.AsyncImage
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,14 +62,26 @@ fun RezeptCard(
 					.clip(RoundedCornerShape(18.dp)), // Rounded corners for the image box
 				contentAlignment = Alignment.Center
 			) {
-				Image(
-					painter = painterResource(
-						id = R.drawable.ic_placeholder_recipe
-					),
-					contentDescription = rezept.name,
-					contentScale = ContentScale.Crop,
-					modifier = Modifier.fillMaxSize()
-				)
+				if (rezept.bildPfad != null) {
+
+					AsyncImage(
+						model = File(rezept.bildPfad),
+						contentDescription = rezept.name,
+						contentScale = ContentScale.Crop,
+						modifier = Modifier.fillMaxSize()
+					)
+
+				} else {
+
+					Image(
+						painter = painterResource(
+							id = R.drawable.ic_placeholder_recipe
+						),
+						contentDescription = rezept.name,
+						contentScale = ContentScale.Crop,
+						modifier = Modifier.fillMaxSize()
+					)
+				}
 			}
 
 			Spacer(modifier = Modifier.height(8.dp))

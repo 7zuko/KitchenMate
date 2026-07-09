@@ -12,6 +12,8 @@ import de.thm.smartshopping.data.db.AppDatabase
 import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
 import de.thm.smartshopping.data.db.dao.EinkaufslisteDao
+import de.thm.smartshopping.data.db.dao.LagerbestandDao
+import de.thm.smartshopping.data.db.dao.RezeptDao
 import de.thm.smartshopping.data.db.repository.ShoppingRepository
 import javax.inject.Singleton
 
@@ -43,8 +45,22 @@ object AppModule {
 	}
 
 	@Provides
+	fun provideLagerbestandDao(
+		appDatabase: AppDatabase
+	): LagerbestandDao {
+
+		return appDatabase.lagerbestandDao()
+
+	}
+
+	@Provides
 	fun provideArtikelKategorieDao(appDatabase: AppDatabase): ArtikelKategorieDao {
 		return appDatabase.artikelKategorieDao()
+	}
+
+	@Provides
+	fun provideRezeptDao(appDatabase: AppDatabase): RezeptDao {
+		return appDatabase.rezeptDao()
 	}
 
 	@Provides
@@ -52,9 +68,18 @@ object AppModule {
 	fun provideShoppingRepository(
 		einkaufslisteDao: EinkaufslisteDao,
 		artikelDao: ArtikelDao,
-		artikelKategorieDao: ArtikelKategorieDao
+		artikelKategorieDao: ArtikelKategorieDao,
+		rezeptDao: RezeptDao,
+		lagerbestandDao: LagerbestandDao
 	): ShoppingRepository {
-		return ShoppingRepository(einkaufslisteDao, artikelDao, artikelKategorieDao)
+
+		return ShoppingRepository(
+			einkaufslisteDao,
+			artikelDao,
+			artikelKategorieDao,
+			rezeptDao,
+			lagerbestandDao
+		)
 	}
 
 	@Provides

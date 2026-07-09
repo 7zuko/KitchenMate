@@ -135,7 +135,7 @@ fun ArtikelVerwaltungScreen(
 			DashboardTopAppBar(
 				title = {
 					if (!isSearching) {
-						Text("Artikelverwaltung")
+						Text("Mein Vorrat")
 					}
 				},
 				showNavigationIcon = false,
@@ -224,7 +224,7 @@ fun ArtikelVerwaltungScreen(
 						gruppe.copy(
 							artikelListe = gruppe.artikelListe.filter {
 								searchText.isBlank() ||
-										it.name.contains(
+										it.artikel.name.contains(
 											searchText,
 											ignoreCase = true
 										)
@@ -234,8 +234,10 @@ fun ArtikelVerwaltungScreen(
 
 				val gefilterteArtikelOhneKategorie =
 					state.artikelOhneKategorie.filter {
+
 						searchText.isBlank() ||
-								it.name.contains(
+
+								it.artikel.name.contains(
 									searchText,
 									ignoreCase = true
 								)
@@ -288,32 +290,41 @@ fun ArtikelVerwaltungScreen(
 								}
 
 								if (kategorieGruppe.isExpanded) {
+
 									items(
 										items = kategorieGruppe.artikelListe,
-										key = { it.id }
-									) { artikel ->
+										key = { it.artikel.id }
+									) { vorratsArtikel ->
+
 										ArtikelZeile(
-											artikel = artikel,
+											artikel = vorratsArtikel.artikel,
+											bestand = vorratsArtikel.menge,
 											onEvent = onEvent
-											)
+										)
+
 									}
 								}
 							}
 
 						if (state.artikelOhneKategorie.isNotEmpty()) {
+
 							stickyHeader {
 								OhneKategorieHeader(
 									artikelAnzahl = gefilterteArtikelOhneKategorie.size
 								)
 							}
+
 							items(
 								items = gefilterteArtikelOhneKategorie,
-								key = { artikel -> "ohne_kat_artikel_${artikel.id}" }
-							) { artikel ->
+								key = { "ohne_kat_artikel_${it.artikel.id}" }
+							) { vorratsArtikel ->
+
 								ArtikelZeile(
-									artikel = artikel,
+									artikel = vorratsArtikel.artikel,
+									bestand = vorratsArtikel.menge,
 									onEvent = onEvent
 								)
+
 							}
 						}
 					}
@@ -353,6 +364,7 @@ fun ArtikelVerwaltungScreenPreview() {
 @Composable
 fun ArtikelZeile(
 	artikel: Artikel,
+	bestand: Double?,
 	onEvent: (ArtikelVerwaltungEvent) -> Unit
 ) {
 	var expanded by remember {
@@ -446,20 +458,6 @@ fun ArtikelZeile(
 							)
 
 							DropdownMenuItem(
-								text = { Text("Emoji ändern") },
-								onClick = {
-									expanded = false
-								}
-							)
-
-							DropdownMenuItem(
-								text = { Text("Kategorie ändern") },
-								onClick = {
-									expanded = false
-								}
-							)
-
-							DropdownMenuItem(
 								text = { Text("Löschen") },
 								onClick = {
 									expanded = false
@@ -493,7 +491,7 @@ fun ArtikelZeile(
 					) {
 
 						Text(
-							text = "⚖️",
+							text = "⚖\uD83D\uDCE6",
 							fontSize = 20.sp
 						)
 
@@ -502,13 +500,13 @@ fun ArtikelZeile(
 						Column {
 
 							Text(
-								text = "Einheit",
+								text = "Bestand",
 								style = MaterialTheme.typography.labelSmall,
 								color = MaterialTheme.colorScheme.onSurfaceVariant
 							)
 
 							Text(
-								text = artikel.einheit ?: "-",
+								text = "${bestand ?: 0.0} ${artikel.einheit ?: ""}",
 								style = MaterialTheme.typography.titleMedium
 							)
 						}
@@ -567,6 +565,7 @@ fun ArtikelZeilePreview() {
 				einheit = "Liter",
 				emoji = "🥛"
 			),
+			bestand = 2.0,
 			onEvent = {}
 		)
 	}

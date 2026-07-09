@@ -104,30 +104,34 @@ fun RezepteScreen(
 						Text("Rezepte")
 					}
 				},
-				showNavigationIcon = false, // Or true if you want a back button, handled by NavController
+				showNavigationIcon = false,
 				actions = {
-					SearchTopBar(
-						searchText = searchText,
-						placeholder = "Rezepte suchen",
 
-						onSearchTextChange = {
-							searchText = it
-						},
+					if (isSearching) {
 
-						onClose = {
-							searchText = ""
-							isSearching = false
-						}
-					)
+						SearchTopBar(
+							searchText = searchText,
+							placeholder = "Rezepte suchen",
 
-					if (!isSearching) {
+							onSearchTextChange = {
+								searchText = it
+							},
+
+							onClose = {
+								searchText = ""
+								isSearching = false
+							}
+						)
+
+					} else {
+
 						IconButton(
 							onClick = {
 								isSearching = true
 							}
 						) {
 							Icon(
-								Icons.Default.Search,
+								imageVector = Icons.Default.Search,
 								contentDescription = "Suche"
 							)
 						}
@@ -253,7 +257,14 @@ fun RezepteScreen(
 				)
 			},
 
-			onCreateConfirmed = { name, beschreibung, zeit ->
+			onCreateConfirmed = {
+					name,
+					beschreibung,
+					zeit,
+					bildPfad,
+					kategorie,
+					schwierigkeit,
+					zutaten ->
 
 				onEvent(
 					RezepteEvent.CreateRezept(
@@ -261,10 +272,29 @@ fun RezepteScreen(
 							id = System.currentTimeMillis().toString(),
 							name = name,
 							beschreibung = beschreibung,
-							zubereitungszeit = zeit
+							zubereitungszeit = zeit,
+							bildPfad = bildPfad,
+							kategorie = kategorie,
+							schwierigkeit = schwierigkeit,
+							zutaten = zutaten
 						)
 					)
 				)
+			},
+
+			allArtikel = state.allArtikel,
+			allKategorien = state.allKategorien,
+
+			showArtikelSheet = state.showArtikelSheet,
+
+			onShowArtikelSheet = {
+				onEvent(
+					RezepteEvent.ShowArtikelSheet(it)
+				)
+			},
+
+			onArtikelEvent = { artikelEvent ->
+				// Das verbinden wir gleich mit dem ArtikelViewModel
 			}
 		)
 	}

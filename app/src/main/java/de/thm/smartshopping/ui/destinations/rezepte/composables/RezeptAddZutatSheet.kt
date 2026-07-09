@@ -17,6 +17,7 @@ import de.thm.smartshopping.data.Artikel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
@@ -24,15 +25,11 @@ import androidx.compose.runtime.*
 @Composable
 fun RezeptAddZutatSheet(
     sheetState: SheetState,
-
     artikelListe: List<Artikel>,
-
     selectedArtikel: Artikel?,
-
     onArtikelSelected: (Artikel) -> Unit,
-
     onConfirm: (Double) -> Unit,
-
+    onCreateNewArtikel: () -> Unit,
     onDismiss: () -> Unit
 ) {
 
@@ -57,7 +54,8 @@ fun RezeptAddZutatSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
 
         Column(
@@ -171,6 +169,16 @@ fun RezeptAddZutatSheet(
             ) {
 
                 Text("Zutat hinzufügen")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    onCreateNewArtikel()
+                }
+            ) {
+                Text("➕ Artikel anlegen")
             }
         }
     }

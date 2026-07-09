@@ -38,10 +38,19 @@ import de.thm.smartshopping.ui.destinations.rezepte.events.RezepteEvent
 import de.thm.smartshopping.ui.destinations.rezepte.states.RezepteScreenState
 import de.thm.smartshopping.ui.destinations.rezepte.viewmodels.RezepteViewModel
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import coil.compose.AsyncImage
+import de.thm.smartshopping.methods.navBarHeight
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptBeschreibungCard
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptHeroCard
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptInfoCard
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptZutatenCard
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -68,16 +77,6 @@ fun RezeptDetailScreen(
         rememberModalBottomSheetState(
             skipPartiallyExpanded = true
         )
-
-    LaunchedEffect(state.showAddZutatSheet) {
-
-        if (state.showAddZutatSheet) {
-
-            onEvent(
-                RezepteEvent.LoadAllArtikel
-            )
-        }
-    }
 
     if (rezept == null) {
 
@@ -115,194 +114,85 @@ fun RezeptDetailScreen(
         Box(
             modifier = Modifier
                 .padding(paddingValues)
+                .padding(bottom = navBarHeight)
                 .fillMaxSize()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
-                Text(
-                    text = rezept.name,
-                    style = MaterialTheme.typography.headlineMedium
+                RezeptHeroCard(
+                    rezept = rezept
                 )
 
                 Spacer(
-                    modifier = Modifier.height(16.dp)
+                    modifier = Modifier.height(20.dp)
                 )
 
-                Surface(
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-
-                    Image(
-                        painter = painterResource(
-                            R.drawable.ic_placeholder_recipe
-                        ),
-                        contentDescription = rezept.name,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(220.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                }
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                ) {
-
-                    Text(
-                        modifier = Modifier.padding(
-                            horizontal = 12.dp,
-                            vertical = 8.dp
-                        ),
-
-                        text = "⏱ ${rezept.zubereitungszeit} Minuten"
-                    )
-                }
-
-                Spacer(
-                    modifier = Modifier.height(24.dp)
-                )
-
-                Text(
-                    text = "Beschreibung",
-                    style = MaterialTheme.typography.titleLarge
-                )
-
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
-
-                Text(
-                    text = rezept.beschreibung ?: ""
+                RezeptInfoCard(
+                    zubereitungszeit = rezept.zubereitungszeit,
+                    anzahlZutaten = rezept.zutaten.size
                 )
 
                 Spacer(
                     modifier = Modifier.height(24.dp)
                 )
 
-                Text(
-                    text = "Zutaten",
-                    style = MaterialTheme.typography.titleLarge
+                RezeptBeschreibungCard(
+                    beschreibung = rezept.beschreibung
                 )
 
                 Spacer(
-                    modifier = Modifier.height(8.dp)
+                    modifier = Modifier.height(24.dp)
                 )
 
-                if (rezept.zutaten.isEmpty()) {
+                RezeptZutatenCard(
+                    zutaten = rezept.zutaten,
 
-                    Text(
-                        text = "Noch keine Zutaten vorhanden",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                } else {
-
-                    rezept.zutaten.forEach { zutat ->
-
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .combinedClickable(
-                                    onClick = {
-                                        // aktuell nichts
-                                    },
-
-                                    onLongClick = {
-                                        onEvent(
-                                            RezepteEvent.RemoveZutatFromRezept(
-                                                rezept.id,
-                                                zutat
-                                            )
-                                        )
-                                    }
-                                ),
-
-                            shape = RoundedCornerShape(16.dp),
-
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-
-                            Row(
-                                modifier = Modifier.padding(14.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-
-                                Text(
-                                    text = "🥕",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-
-                                Spacer(
-                                    modifier = Modifier.width(12.dp)
-                                )
-
-                                Text(
-                                    text = zutat.artikel.name,
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer
-                                ) {
-
-                                    Text(
-                                        modifier = Modifier.padding(
-                                            horizontal = 10.dp,
-                                            vertical = 6.dp
-                                        ),
-
-                                        text =
-                                            "${zutat.menge} ${zutat.artikel.einheit ?: ""}"
-                                    )
-                                }
-
-                                Spacer(
-                                    modifier = Modifier.width(8.dp)
-                                )
-
-                                IconButton(
-                                    onClick = {
-                                        onEvent(
-                                            RezepteEvent.RemoveZutatFromRezept(
-                                                rezept.id,
-                                                zutat
-                                            )
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Zutat löschen"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(
-                    modifier = Modifier.height(12.dp)
-                )
-
-                Button(
-                    onClick = {
+                    onAddClick = {
                         onEvent(
                             RezepteEvent.ShowAddZutatSheet(true)
                         )
+                    },
+
+                    onDeleteClick = { zutat ->
+
+                        onEvent(
+                            RezepteEvent.RemoveZutatFromRezept(
+                                rezept.id,
+                                zutat
+                            )
+                        )
+                    }
+                )
+
+                Spacer(
+                    modifier = Modifier.height(20.dp)
+                )
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+
+                    onClick = {
+
+                        onEvent(
+                            RezepteEvent.CreateShoppingListFromRecipe(
+                                rezept
+                            )
+                        )
+
                     }
                 ) {
-                    Text("+ Zutat hinzufügen")
+                    Text("🛒 Einkaufsliste erstellen")
                 }
+
+                Spacer(
+
+                    modifier = Modifier.height(150.dp)
+
+                )
             }
         }
     }
@@ -348,6 +238,12 @@ fun RezeptDetailScreen(
                         RezepteEvent.ShowAddZutatSheet(false)
                     )
                 }
+            },
+
+            onCreateNewArtikel = {
+                onEvent(
+                    RezepteEvent.ShowArtikelSheet(true)
+                )
             },
 
             onDismiss = {

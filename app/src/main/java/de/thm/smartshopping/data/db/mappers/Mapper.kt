@@ -4,10 +4,13 @@ import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.EinkaufsArtikel
 import de.thm.smartshopping.data.Einkaufsliste
+import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.db.entity.ArtikelEntity
 import de.thm.smartshopping.data.db.entity.ArtikelKategorieEntity
 import de.thm.smartshopping.data.db.entity.EinkaufsArtikelCrossRef
 import de.thm.smartshopping.data.db.entity.EinkaufslisteEntity
+import de.thm.smartshopping.data.db.entity.RezeptEntity
+import de.thm.smartshopping.data.db.entity.RezeptZutatEntity
 import de.thm.smartshopping.data.db.relation.EinkaufslisteWithCrossRefs
 import java.sql.Date
 
@@ -111,3 +114,60 @@ fun List<EinkaufsArtikel>.toEinkaufsArtikelEntities(einkaufslisteId: String): Li
 		)
 	}
 }
+
+fun Rezept.toRezeptZutatEntities(): List<RezeptZutatEntity> {
+
+	return zutaten.map {
+
+		RezeptZutatEntity(
+			rezeptId = id,
+			artikelId = it.artikel.id,
+			menge = it.menge
+		)
+	}
+
+}
+
+fun Rezept.toEntity() =
+
+	RezeptEntity(
+
+		id = id,
+
+		name = name,
+
+		beschreibung = beschreibung,
+
+		zubereitungszeit = zubereitungszeit,
+
+		portionen = portionen,
+
+		schwierigkeit = schwierigkeit,
+
+		kategorie = kategorie,
+
+		bildPfad = bildPfad
+
+	)
+
+fun RezeptEntity.toDomain() =
+
+	Rezept(
+
+		id = id,
+
+		name = name,
+
+		beschreibung = beschreibung,
+
+		zubereitungszeit = zubereitungszeit,
+
+		portionen = portionen,
+
+		schwierigkeit = schwierigkeit,
+
+		kategorie = kategorie,
+
+		bildPfad = bildPfad
+
+	)

@@ -20,7 +20,60 @@ class RezepteViewModel @Inject constructor(
         RezepteScreenState()
     )
 
+    private val allRezepteFlow =
+        shoppingRepository.getAllRezepte()
+
+    private val allArtikelFlow =
+        shoppingRepository.getAllArtikel()
+
+    private val allKategorienFlow =
+        shoppingRepository.getAllArtikelKategorien()
+
     val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+
+            allRezepteFlow.collect { rezepte ->
+
+                _state.update {
+                    it.copy(
+                        rezepte = rezepte
+                    )
+                }
+
+            }
+
+        }
+
+        viewModelScope.launch {
+
+            allKategorienFlow.collect { kategorien ->
+
+                _state.update {
+                    it.copy(
+                        allKategorien = kategorien
+                    )
+                }
+
+            }
+
+        }
+
+        viewModelScope.launch {
+
+            allArtikelFlow.collect { artikelListe ->
+
+                _state.update {
+                    it.copy(
+                        allArtikel = artikelListe
+                    )
+                }
+
+            }
+
+        }
+    }
 
     fun onEvent(event: RezepteEvent) {
         when (event) {
@@ -33,35 +86,60 @@ class RezepteViewModel @Inject constructor(
                 }
             }
 
-            is RezepteEvent.CreateRezept -> {
+            is RezepteEvent.ShowArtikelSheet -> {
                 _state.update {
                     it.copy(
-                        rezepte = it.rezepte + event.rezept,
-                        showCreateSheet = false
+                        showArtikelSheet = event.show
                     )
+                }
+            }
+
+            is RezepteEvent.SaveArtikel -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.saveArtikel(
+                        event.artikel
+                    )
+
+                    println("Artikel gespeichert: ${event.artikel.name}")
+
+                    _state.update {
+                        it.copy(
+                            showArtikelSheet = false
+                        )
+                    }
+                }
+            }
+
+            is RezepteEvent.CreateRezept -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.saveRezept(event.rezept)
+
+                    _state.update {
+                        it.copy(
+                            showCreateSheet = false
+                        )
+                    }
+
                 }
             }
 
             is RezepteEvent.AddZutatToRezept -> {
 
-                _state.update { state ->
+                viewModelScope.launch {
 
-                    state.copy(
-                        rezepte =
-                            state.rezepte.map { rezept ->
+                    val rezept = _state.value.rezepte.find {
+                        it.id == event.rezeptId
+                    } ?: return@launch
 
-                                if (rezept.id == event.rezeptId) {
-
-                                    rezept.copy(
-                                        zutaten =
-                                            rezept.zutaten + event.zutat
-                                    )
-
-                                } else {
-                                    rezept
-                                }
-                            }
+                    val neuesRezept = rezept.copy(
+                        zutaten = rezept.zutaten + event.zutat
                     )
+
+                    shoppingRepository.saveRezept(neuesRezept)
                 }
             }
 
@@ -128,6 +206,17 @@ class RezepteViewModel @Inject constructor(
                                 }
                             }
                     )
+                }
+            }
+
+            is RezepteEvent.CreateShoppingListFromRecipe -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.createShoppingListFromRecipe(
+                        event.rezept
+                    )
+
                 }
             }
         }

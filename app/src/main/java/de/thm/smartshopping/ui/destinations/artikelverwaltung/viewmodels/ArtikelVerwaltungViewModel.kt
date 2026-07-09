@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
+import de.thm.smartshopping.data.VorratsArtikel
 import de.thm.smartshopping.data.db.repository.ShoppingRepository
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.states.ArtikelVerwaltungState
@@ -25,18 +26,44 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 	private val _state = MutableStateFlow(ArtikelVerwaltungState())
 	val state: StateFlow<ArtikelVerwaltungState> = _state.asStateFlow()
 
-	private val allArtikelFlow = shoppingRepository.getAllArtikel()
+	private val allArtikelFlow =
+		shoppingRepository.getAllArtikel()
+
+	private val allVorratFlow =
+		shoppingRepository.getAllVorratsArtikel()
+
 	private val allKategorienFlow = shoppingRepository.getAllArtikelKategorien()
 
 	init {
 		viewModelScope.launch {
 			_state.update { it.copy(isLoading = true) }
 
-			allArtikelFlow.combine(allKategorienFlow) { artikel, kategorien ->
-				Pair(artikel, kategorien)
-			}.collect { (artikel, kategorien) ->
-				updateGruppierteArtikel(artikel, kategorien)
+			combine(
+
+				allVorratFlow,
+
+				allArtikelFlow,
+
+				allKategorienFlow
+
+			) { vorrat, artikel, kategorien ->
+
+				Triple(vorrat, artikel, kategorien)
+
 			}
+				.collect { (vorrat, artikel, kategorien) ->
+
+					updateGruppierteArtikel(
+
+						vorrat,
+
+						artikel,
+
+						kategorien
+
+					)
+
+				}
 		}
 	}
 
@@ -123,26 +150,44 @@ class ArtikelVerwaltungViewModel @Inject constructor(
             else -> {}
         }
 	}
-	private fun updateGruppierteArtikel(alleArtikel: List<Artikel>, alleKategorien: List<ArtikelKategorie>) {
-		val artikelMitKategorie = alleArtikel.filter { it.kategorie != null }
-		val artikelOhneKategorie = alleArtikel.filter { it.kategorie == null }
+	private fun updateGruppierteArtikel(
+
+		vorrat: List<VorratsArtikel>,
+
+		alleArtikel: List<Artikel>,
+
+		alleKategorien: List<ArtikelKategorie>
+
+	) {
+		val artikelMitKategorie =
+			vorrat.filter {
+				it.artikel.kategorie != null
+			}
+
+		val artikelOhneKategorie =
+			vorrat.filter {
+				it.artikel.kategorie == null
+			}
 
 		val gruppiert = alleKategorien.map { kategorie ->
 			KategorieMitArtikeln(
 				kategorie = kategorie,
-				artikelListe = artikelMitKategorie.filter { it.kategorie?.id == kategorie.id },
+				artikelListe =
+					artikelMitKategorie.filter {
+						it.artikel.kategorie?.id == kategorie.id
+					},
 				isExpanded = _state.value.gruppierteArtikel.find { it.kategorie.id == kategorie.id }?.isExpanded ?: false
 			)
-		}.filter { it.artikelListe.isNotEmpty() } // Entferne Kategorien ohne Artikel
+		}.filter { it.artikelListe.isNotEmpty() }
 
 		_state.update {
 			it.copy(
 				artikelListe = alleArtikel,
+				vorratsArtikel = vorrat,
 				gruppierteArtikel = gruppiert,
 				artikelOhneKategorie = artikelOhneKategorie,
 				isLoading = false
 			)
 		}
-
 	}
 }

@@ -30,6 +30,9 @@ interface ArtikelDao {
 	@Query("SELECT * FROM artikel WHERE id = :id")
 	fun getArtikelById(id: String): Flow<ArtikelEntity?>
 
+	@Query("SELECT * FROM artikel")
+	fun getAllArtikelEntities(): Flow<List<ArtikelEntity>>
+
 	@Query("SELECT * FROM artikel WHERE name LIKE '%' || :name || '%'")
 	fun getArtikelByName(name: String): Flow<List<ArtikelEntity>>
 }
