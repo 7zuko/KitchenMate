@@ -30,4 +30,20 @@ sealed interface ArtikelVerwaltungEvent {
 	object ClearSelection : ArtikelVerwaltungEvent
 
 	object DeleteSelectedArtikel : ArtikelVerwaltungEvent
+
+	data class ShowAddVorratSheet(
+		val show: Boolean
+	) : ArtikelVerwaltungEvent
+
+	data class SaveVorrat(
+		val artikel: Artikel,
+		val menge: Double
+	) : ArtikelVerwaltungEvent
+
+	data class SelectArtikelForVorrat(
+		val artikel: Artikel
+	) : ArtikelVerwaltungEvent
+
+	object ClearSelectedArtikelForVorrat
+		: ArtikelVerwaltungEvent
 }

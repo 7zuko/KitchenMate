@@ -26,7 +26,11 @@ data class ArtikelVerwaltungState(
 
 	val isEnterTransitionFinished: Boolean = false,
 
-	val currentArtikel: Artikel? = null
+	val currentArtikel: Artikel? = null,
+
+	val showAddVorratSheet: Boolean = false,
+
+	val selectedArtikelForVorrat: Artikel? = null
 )
 
 data class KategorieMitArtikeln(

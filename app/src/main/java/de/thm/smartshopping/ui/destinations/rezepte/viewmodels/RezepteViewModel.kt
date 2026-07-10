@@ -87,6 +87,8 @@ class RezepteViewModel @Inject constructor(
             }
 
             is RezepteEvent.ShowArtikelSheet -> {
+                println("ShowArtikelSheet: ${event.show}")
+
                 _state.update {
                     it.copy(
                         showArtikelSheet = event.show
@@ -109,6 +111,17 @@ class RezepteViewModel @Inject constructor(
                             showArtikelSheet = false
                         )
                     }
+                }
+            }
+
+            is RezepteEvent.SaveKategorie -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.saveArtikelKategorie(
+                        event.kategorie
+                    )
+
                 }
             }
 
@@ -167,22 +180,6 @@ class RezepteViewModel @Inject constructor(
                     it.copy(
                         selectedArtikelForRezept = null
                     )
-                }
-            }
-
-            is RezepteEvent.LoadAllArtikel -> {
-
-                viewModelScope.launch {
-
-                    shoppingRepository.getAllArtikel()
-                        .collect { artikelListe ->
-
-                            _state.update {
-                                it.copy(
-                                    allArtikel = artikelListe
-                                )
-                            }
-                        }
                 }
             }
 

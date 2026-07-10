@@ -37,6 +37,16 @@ fun RezeptAddZutatSheet(
         mutableStateOf("")
     }
 
+    LaunchedEffect(selectedArtikel) {
+
+        selectedArtikel?.let {
+
+            searchText = it.name
+
+        }
+
+    }
+
     var mengeText by remember {
         mutableStateOf("1")
     }
@@ -172,9 +182,11 @@ fun RezeptAddZutatSheet(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
             OutlinedButton(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
+                    println("BUTTON Artikel anlegen GEKLICKT")
                     onCreateNewArtikel()
                 }
             ) {

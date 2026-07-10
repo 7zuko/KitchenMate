@@ -48,7 +48,7 @@ import de.thm.smartshopping.methods.enterTransitionDuration
 import de.thm.smartshopping.methods.navBarHeight
 import de.thm.smartshopping.ui.composables.KategorieHeader
 import de.thm.smartshopping.ui.composables.OhneKategorieHeader
-import de.thm.smartshopping.ui.destinations.artikelverwaltung.composables.ArtikelVerwaltungAddArtikelSheet
+import de.thm.smartshopping.ui.composables.AddArtikelSheet
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.states.ArtikelVerwaltungState
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
@@ -78,6 +78,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import de.thm.smartshopping.ui.composables.AddVorratSheet
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -112,6 +113,11 @@ fun ArtikelVerwaltungScreen(
 	val sheetAddArtikelState = rememberModalBottomSheetState(
 		skipPartiallyExpanded = true
 	)
+
+	val sheetAddVorratState = rememberModalBottomSheetState(
+			skipPartiallyExpanded = true
+	)
+
 	LaunchedEffect(state.showAddArtikelMenu) {
 		scope.launch {
 			if (state.showAddArtikelMenu) {
@@ -123,6 +129,19 @@ fun ArtikelVerwaltungScreen(
 			}
 		}
 	}
+
+	LaunchedEffect(state.showAddVorratSheet) {
+		scope.launch {
+			if (state.showAddVorratSheet) {
+				sheetAddVorratState.show()
+			} else {
+				if (sheetAddVorratState.isVisible) {
+					sheetAddVorratState.hide()
+				}
+			}
+		}
+	}
+
 	LaunchedEffect(sheetAddArtikelState.isVisible) {
 		if (!sheetAddArtikelState.isVisible && state.showAddArtikelMenu) {
 			onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(false))
@@ -181,8 +200,9 @@ fun ArtikelVerwaltungScreen(
 			) {
 				FloatingActionButton(
 					onClick = {
-						onEvent(ArtikelVerwaltungEvent.SetCurrentArtikel(null))
-						onEvent(ArtikelVerwaltungEvent.ShowAddArtikelMenu(true))
+						onEvent(
+							ArtikelVerwaltungEvent.ShowAddVorratSheet(true)
+						)
 					}
 				) {
 					Icon(Icons.Default.Add, contentDescription = "Artikel hinzufügen")
@@ -334,14 +354,90 @@ fun ArtikelVerwaltungScreen(
 	}
 
 	if (state.showAddArtikelMenu) {
+
 		onEvent(ArtikelVerwaltungEvent.GetAllKategorien)
 
-		ArtikelVerwaltungAddArtikelSheet(
+		AddArtikelSheet(
+
 			sheetState = sheetAddArtikelState,
+
 			currentArtikel = state.currentArtikel,
+
 			allArtikel = state.artikelListe,
+
 			allKategorien = state.allKategorien,
-			onEvent = onEvent
+
+			onSaveArtikel = { artikel ->
+
+				if (state.currentArtikel != null) {
+
+					onEvent(
+						ArtikelVerwaltungEvent.EditArtikel(artikel)
+					)
+
+				} else {
+
+					onEvent(
+						ArtikelVerwaltungEvent.SaveArtikel(artikel)
+					)
+				}
+			},
+
+			onSaveKategorie = { kategorie ->
+
+				onEvent(
+					ArtikelVerwaltungEvent.SaveKategorie(kategorie)
+				)
+
+			},
+
+			onDismiss = {
+
+				onEvent(
+					ArtikelVerwaltungEvent.ClearCurrentArtikel
+				)
+
+				onEvent(
+					ArtikelVerwaltungEvent.ShowAddArtikelMenu(false)
+				)
+			}
+		)
+	}
+
+	if (state.showAddVorratSheet) {
+
+		AddVorratSheet(
+
+			sheetState = sheetAddVorratState,
+
+			artikelListe = state.artikelListe,
+
+			selectedArtikel = state.selectedArtikelForVorrat,
+
+			onSave = { artikel, menge ->
+				onEvent(
+					ArtikelVerwaltungEvent.SaveVorrat(
+						artikel,
+						menge
+					)
+				)
+			},
+
+			onCreateArtikel = {
+				onEvent(
+					ArtikelVerwaltungEvent.ShowAddVorratSheet(false)
+				)
+
+				onEvent(
+					ArtikelVerwaltungEvent.ShowAddArtikelMenu(true)
+				)
+			},
+
+			onDismiss = {
+				onEvent(
+					ArtikelVerwaltungEvent.ShowAddVorratSheet(false)
+				)
+			}
 		)
 	}
 }

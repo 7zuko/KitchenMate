@@ -1,6 +1,7 @@
 package de.thm.smartshopping.ui.destinations.rezepte.events
 
 import de.thm.smartshopping.data.Artikel
+import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
@@ -30,8 +31,6 @@ sealed interface RezepteEvent {
 
     data object ClearSelectedArtikelForRezept : RezepteEvent
 
-    data object LoadAllArtikel : RezepteEvent
-
     data class RemoveZutatFromRezept(
         val rezeptId: String,
         val zutat: RezeptZutat
@@ -47,5 +46,9 @@ sealed interface RezepteEvent {
 
     data class SaveArtikel(
         val artikel: Artikel
+    ) : RezepteEvent
+
+    data class SaveKategorie(
+        val kategorie: ArtikelKategorie
     ) : RezepteEvent
 }

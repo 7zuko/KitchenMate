@@ -99,7 +99,7 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 				}
 			}
 
-			ArtikelVerwaltungEvent.GetAllKategorien -> {
+			is ArtikelVerwaltungEvent.GetAllKategorien -> {
 			viewModelScope.launch {
 				shoppingRepository.getAllArtikelKategorien()
 					.collect { artikelKategorien ->
@@ -124,9 +124,23 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 			}
 
 			is ArtikelVerwaltungEvent.SaveArtikel -> {
+
 				viewModelScope.launch {
+
 					shoppingRepository.saveArtikel(event.artikel)
+
+					_state.update {
+
+						it.copy(
+							showAddArtikelMenu = false,
+							showAddVorratSheet = true,
+							selectedArtikelForVorrat = event.artikel
+						)
+
+					}
+
 				}
+
 			}
 
 			is ArtikelVerwaltungEvent.SaveKategorie -> {
@@ -144,6 +158,45 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 			is ArtikelVerwaltungEvent.ShowAddArtikelMenu -> {
 				_state.update {
 					it.copy(showAddArtikelMenu = event.boolean)
+				}
+			}
+
+			is ArtikelVerwaltungEvent.ShowAddVorratSheet -> {
+				_state.update {
+					it.copy(
+						showAddVorratSheet = event.show
+					)
+				}
+			}
+
+			is ArtikelVerwaltungEvent.SaveVorrat -> {
+				viewModelScope.launch {
+					shoppingRepository.setLagerbestand(
+						artikelId = event.artikel.id,
+						menge = event.menge
+					)
+
+					_state.update {
+						it.copy(
+							showAddVorratSheet = false
+						)
+					}
+				}
+			}
+
+			is ArtikelVerwaltungEvent.SelectArtikelForVorrat -> {
+				_state.update {
+					it.copy(
+						selectedArtikelForVorrat = event.artikel
+					)
+				}
+			}
+
+			is ArtikelVerwaltungEvent.ClearSelectedArtikelForVorrat -> {
+				_state.update {
+					it.copy(
+						selectedArtikelForVorrat = null
+					)
 				}
 			}
 

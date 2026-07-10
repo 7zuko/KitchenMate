@@ -44,8 +44,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import coil.compose.AsyncImage
 import de.thm.smartshopping.methods.navBarHeight
+import de.thm.smartshopping.ui.composables.AddArtikelSheet
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptBeschreibungCard
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptHeroCard
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptInfoCard
@@ -77,6 +81,65 @@ fun RezeptDetailScreen(
         rememberModalBottomSheetState(
             skipPartiallyExpanded = true
         )
+
+    val artikelSheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+
+    var selectedArtikel by remember {
+        mutableStateOf(state.selectedArtikelForRezept)
+    }
+
+    var pendingArtikelId by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(state.showAddZutatSheet) {
+
+        if (state.showAddZutatSheet) {
+
+            addZutatSheetState.show()
+
+        } else {
+
+            if (addZutatSheetState.isVisible) {
+                addZutatSheetState.hide()
+            }
+        }
+    }
+
+    LaunchedEffect(state.showArtikelSheet) {
+
+        if (state.showArtikelSheet) {
+
+            artikelSheetState.show()
+
+        } else {
+
+            if (artikelSheetState.isVisible) {
+                artikelSheetState.hide()
+            }
+        }
+    }
+
+    LaunchedEffect(state.allArtikel, pendingArtikelId) {
+
+        val id = pendingArtikelId ?: return@LaunchedEffect
+
+        val neuerArtikel =
+            state.allArtikel.find {
+                it.id == id
+            } ?: return@LaunchedEffect
+
+        selectedArtikel = neuerArtikel
+
+        pendingArtikelId = null
+
+        onEvent(
+            RezepteEvent.ShowAddZutatSheet(true)
+        )
+    }
 
     if (rezept == null) {
 
@@ -204,20 +267,15 @@ fun RezeptDetailScreen(
 
             artikelListe = state.allArtikel,
 
-            selectedArtikel = state.selectedArtikelForRezept,
+            selectedArtikel = selectedArtikel,
 
-            onArtikelSelected = { artikel ->
-
-                onEvent(
-                    RezepteEvent.SelectArtikelForRezept(
-                        artikel
-                    )
-                )
+            onArtikelSelected = {
+                selectedArtikel = it
             },
 
             onConfirm = { menge ->
 
-                state.selectedArtikelForRezept?.let { artikel ->
+                selectedArtikel?.let { artikel ->
 
                     onEvent(
                         RezepteEvent.AddZutatToRezept(
@@ -230,9 +288,7 @@ fun RezeptDetailScreen(
                         )
                     )
 
-                    onEvent(
-                        RezepteEvent.ClearSelectedArtikelForRezept
-                    )
+                    selectedArtikel = null
 
                     onEvent(
                         RezepteEvent.ShowAddZutatSheet(false)
@@ -241,6 +297,11 @@ fun RezeptDetailScreen(
             },
 
             onCreateNewArtikel = {
+
+                onEvent(
+                    RezepteEvent.ShowAddZutatSheet(false)
+                )
+
                 onEvent(
                     RezepteEvent.ShowArtikelSheet(true)
                 )
@@ -249,6 +310,47 @@ fun RezeptDetailScreen(
             onDismiss = {
                 onEvent(
                     RezepteEvent.ShowAddZutatSheet(false)
+                )
+            }
+        )
+    }
+
+    if (state.showArtikelSheet) {
+
+        AddArtikelSheet(
+
+            sheetState = artikelSheetState,
+
+            currentArtikel = null,
+
+            allArtikel = state.allArtikel,
+
+            allKategorien = state.allKategorien,
+
+            onSaveArtikel = { artikel ->
+
+                pendingArtikelId = artikel.id
+
+                onEvent(
+                    RezepteEvent.SaveArtikel(artikel)
+                )
+
+                onEvent(
+                    RezepteEvent.ShowArtikelSheet(false)
+                )
+            },
+
+            onSaveKategorie = { kategorie ->
+
+                onEvent(
+                    RezepteEvent.SaveKategorie(kategorie)
+                )
+            },
+
+            onDismiss = {
+
+                onEvent(
+                    RezepteEvent.ShowArtikelSheet(false)
                 )
             }
         )

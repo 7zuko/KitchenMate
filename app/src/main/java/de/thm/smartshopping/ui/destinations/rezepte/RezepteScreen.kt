@@ -37,7 +37,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.Rezept
+import de.thm.smartshopping.data.RezeptZutat
+import de.thm.smartshopping.ui.composables.AddArtikelSheet
 import de.thm.smartshopping.ui.composables.SearchTopBar
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptCreateSheet
 import de.thm.smartshopping.ui.destinations.rezepte.events.RezepteEvent
@@ -60,9 +63,30 @@ fun RezepteScreen(
 		mutableStateOf("")
 	}
 
+	var selectedArtikel by remember {
+		mutableStateOf<Artikel?>(null)
+	}
+
+	var pendingArtikelId by remember {
+		mutableStateOf<String?>(null)
+	}
+
+	var zutaten by remember {
+		mutableStateOf<List<RezeptZutat>>(emptyList())
+	}
+
+	var showAddZutatSheet by remember {
+		mutableStateOf(false)
+	}
+
 	val scope = rememberCoroutineScope()
 
 	val createSheetState =
+		rememberModalBottomSheetState(
+			skipPartiallyExpanded = true
+		)
+
+	val artikelSheetState =
 		rememberModalBottomSheetState(
 			skipPartiallyExpanded = true
 		)
@@ -76,6 +100,25 @@ fun RezepteScreen(
 
 				if (createSheetState.isVisible) {
 					createSheetState.hide()
+				}
+			}
+		}
+	}
+
+	LaunchedEffect(state.showArtikelSheet) {
+
+		scope.launch {
+
+			if (state.showArtikelSheet) {
+
+				artikelSheetState.show()
+
+			} else {
+
+				if (artikelSheetState.isVisible) {
+
+					artikelSheetState.hide()
+
 				}
 			}
 		}
@@ -255,6 +298,14 @@ fun RezepteScreen(
 				onEvent(
 					RezepteEvent.ShowCreateSheet(false)
 				)
+
+				zutaten = emptyList()
+
+				selectedArtikel = null
+
+				pendingArtikelId = null
+
+				showAddZutatSheet = false
 			},
 
 			onCreateConfirmed = {
@@ -264,7 +315,7 @@ fun RezepteScreen(
 					bildPfad,
 					kategorie,
 					schwierigkeit,
-					zutaten ->
+					rezeptZutaten ->
 
 				onEvent(
 					RezepteEvent.CreateRezept(
@@ -276,25 +327,92 @@ fun RezepteScreen(
 							bildPfad = bildPfad,
 							kategorie = kategorie,
 							schwierigkeit = schwierigkeit,
-							zutaten = zutaten
+							zutaten = rezeptZutaten
 						)
 					)
 				)
+
+				zutaten = emptyList()
+				selectedArtikel = null
+				pendingArtikelId = null
+				showAddZutatSheet = false
 			},
 
 			allArtikel = state.allArtikel,
-			allKategorien = state.allKategorien,
 
-			showArtikelSheet = state.showArtikelSheet,
+			zutaten = zutaten,
 
-			onShowArtikelSheet = {
+			onZutatenChanged = {
+				zutaten = it
+			},
+
+			onAddZutatClicked = {
+				showAddZutatSheet = true
+			},
+
+			onAddArtikelClicked = {
 				onEvent(
-					RezepteEvent.ShowArtikelSheet(it)
+					RezepteEvent.ShowArtikelSheet(true)
 				)
 			},
 
-			onArtikelEvent = { artikelEvent ->
-				// Das verbinden wir gleich mit dem ArtikelViewModel
+			selectedArtikel = selectedArtikel,
+
+			onArtikelSelected = {
+				selectedArtikel = it
+			},
+
+			showAddZutatSheet = showAddZutatSheet,
+
+			onShowAddZutatSheet = {
+				showAddZutatSheet = it
+			},
+
+			pendingArtikelId = pendingArtikelId,
+
+			onPendingArtikelIdChanged = {
+				pendingArtikelId = it
+			},
+		)
+	}
+
+	if (state.showArtikelSheet) {
+
+		AddArtikelSheet(
+
+			sheetState = artikelSheetState,
+
+			currentArtikel = null,
+
+			allArtikel = state.allArtikel,
+
+			allKategorien = state.allKategorien,
+
+			onSaveArtikel = { artikel ->
+
+				pendingArtikelId = artikel.id
+
+				onEvent(
+					RezepteEvent.SaveArtikel(artikel)
+				)
+
+				onEvent(
+					RezepteEvent.ShowArtikelSheet(false)
+				)
+			},
+
+			onSaveKategorie = { kategorie ->
+
+				onEvent(
+					RezepteEvent.SaveKategorie(kategorie)
+				)
+			},
+
+			onDismiss = {
+
+				onEvent(
+					RezepteEvent.ShowArtikelSheet(false)
+				)
 			}
 		)
 	}
