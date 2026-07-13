@@ -20,15 +20,23 @@ import de.thm.smartshopping.data.Rezept
 import androidx.compose.ui.res.painterResource
 import java.io.File
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun RezeptHeroCard(
-    rezept: Rezept
+    rezept: Rezept,
+    onEditName: () -> Unit,
+    onEditImage: () -> Unit
 ) {
 
     Surface(
@@ -44,7 +52,10 @@ fun RezeptHeroCard(
                     contentDescription = rezept.name,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(300.dp)
+                        .clickable{
+                            onEditImage()
+                        },
                     contentScale = ContentScale.Crop
                 )
 
@@ -55,7 +66,10 @@ fun RezeptHeroCard(
                     contentDescription = rezept.name,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(300.dp)
+                        .clickable {
+                            onEditImage()
+                        },
                     contentScale = ContentScale.Crop
                 )
 
@@ -77,14 +91,37 @@ fun RezeptHeroCard(
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
+                    .fillMaxWidth()
                     .padding(20.dp)
             ) {
 
-                Text(
-                    text = rezept.name,
-                    color = Color.White,
-                    style = MaterialTheme.typography.headlineMedium
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Text(
+                        text = rezept.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.weight(1f),
+                        color = Color.White
+                    )
+
+                    Surface(
+                        color = Color.Transparent,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        IconButton(
+                            onClick = onEditName
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
 
                 Spacer(
                     modifier = Modifier.height(6.dp)

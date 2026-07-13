@@ -121,9 +121,22 @@ class EinkaufslistenAnsichtViewModel @Inject constructor(
 							notiz = if (event.einkaufsArtikel.notiz.isNullOrBlank()) null else event.einkaufsArtikel.notiz,
 							erledigt = event.einkaufsArtikel.erledigt
 						)
+
+						val wirdErledigt = !event.einkaufsArtikel.erledigt
+
+						if (wirdErledigt) {
+
+							shoppingRepository.addArtikelToVorrat(
+								artikel = event.einkaufsArtikel.artikel,
+								menge = event.einkaufsArtikel.menge
+							)
+
+						}
 					}
 				}
 			}
+
+
 
 			is EinkaufslistenAnsichtEvent.ShowEditArtikelMenu -> {
 				_state.update {

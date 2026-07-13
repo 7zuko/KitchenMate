@@ -2,6 +2,7 @@ package de.thm.smartshopping.ui.destinations.artikelverwaltung.events
 
 import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
+import de.thm.smartshopping.data.VorratsArtikel
 
 sealed interface ArtikelVerwaltungEvent {
 	data class SetEnterTransitionFinished(val boolean: Boolean) : ArtikelVerwaltungEvent
@@ -46,4 +47,14 @@ sealed interface ArtikelVerwaltungEvent {
 
 	object ClearSelectedArtikelForVorrat
 		: ArtikelVerwaltungEvent
+
+	data class DeleteVorrat(
+		val artikelId: String
+	) : ArtikelVerwaltungEvent
+
+	data class EditVorrat(
+		val vorratsArtikel: VorratsArtikel
+	) : ArtikelVerwaltungEvent
+
+	object CloseEditVorratSheet : ArtikelVerwaltungEvent
 }

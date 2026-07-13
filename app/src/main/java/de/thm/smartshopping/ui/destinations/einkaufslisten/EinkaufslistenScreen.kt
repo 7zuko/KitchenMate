@@ -140,19 +140,9 @@ fun EinkaufslistenScreen(
 				},
 				showNavigationIcon = false,
 				actions = {
-					if (isSearching) {
-						IconButton(
-							onClick = {
-								searchText = ""
-								isSearching = false
-							}
-						) {
-							Icon(
-								Icons.Default.Close,
-								contentDescription = "Suche schließen"
-							)
-						}
-					} else {
+
+					if (!isSearching) {
+
 						IconButton(
 							onClick = {
 								isSearching = true
@@ -164,10 +154,16 @@ fun EinkaufslistenScreen(
 							)
 						}
 					}
-					IconButton(onClick = {
-						onEvent(EinkaufslistenEvent.ShowCreateSheet(true))
-					}) {
-						Icon(Icons.Filled.Add, contentDescription = "Einkaufsliste erstellen")
+
+					IconButton(
+						onClick = {
+							onEvent(EinkaufslistenEvent.ShowCreateSheet(true))
+						}
+					) {
+						Icon(
+							Icons.Default.Add,
+							contentDescription = "Einkaufsliste erstellen"
+						)
 					}
 				}
 			)

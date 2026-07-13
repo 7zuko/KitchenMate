@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -41,12 +42,13 @@ fun CustomModalSheet(
 	title: String,
 	enableConfirmCancelButtons: Boolean = true,
 	confirmButtonName: String = "Speichern",
-	onConfirm: (closeAction: () -> Unit) -> Unit = { closeAction -> closeAction() },
+	onConfirm: (() -> Unit) -> Unit = { closeAction -> closeAction() },
 	onConfirmAfterClose: () -> Unit = {},
 	conditionConfirmEnabled: Boolean = true,
-	onDismiss: (closeAction: () -> Unit) -> Unit = { closeAction -> closeAction() },
+	onDismiss: (() -> Unit) -> Unit = { closeAction -> closeAction() },
 	onDismissAfterClose: () -> Unit = {},
-	content: @Composable (ColumnScope.() -> Unit),
+	scrollable: Boolean = false,
+	content: @Composable ColumnScope.() -> Unit,
 ) {
 	val scope = rememberCoroutineScope()
 
@@ -74,7 +76,7 @@ fun CustomModalSheet(
 				.fillMaxWidth()
 				.imePadding()
 				.padding(
-					bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+					bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 				)
 				.padding(horizontal = 20.dp),
 			horizontalAlignment = Alignment.CenterHorizontally
@@ -89,7 +91,15 @@ fun CustomModalSheet(
 				modifier = Modifier.padding(bottom = 16.dp)
 			)
 
-			content()
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.weight(1f, fill = false)
+			) {
+				Column {
+					content()
+				}
+			}
 
 			if (enableConfirmCancelButtons) {
 				Spacer(Modifier.height(20.dp))
@@ -151,7 +161,10 @@ fun CreateEinkaufslisteSheetPreview() {
 	sheetState
 
 	SmartShoppingTheme {
-		Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+		Box(
+			modifier = Modifier.fillMaxSize(),
+			contentAlignment = Alignment.BottomCenter
+		) {
 			CustomModalSheet(
 				title = "Test",
 				enableConfirmCancelButtons = true,

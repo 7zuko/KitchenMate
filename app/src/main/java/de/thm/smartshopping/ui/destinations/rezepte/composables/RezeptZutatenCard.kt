@@ -1,12 +1,9 @@
 package de.thm.smartshopping.ui.destinations.rezepte.composables
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,13 +15,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.data.RezeptZutat
+import de.thm.smartshopping.data.ZutatenStatus
+import de.thm.smartshopping.ui.composables.CustomModalSheet
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RezeptZutatenCard(
     zutaten: List<RezeptZutat>,
+    zutatenStatus: Map<String, ZutatenStatus>,
     onAddClick: () -> Unit,
-    onDeleteClick: (RezeptZutat) -> Unit
+    onDeleteClick: (RezeptZutat) -> Unit,
+    onUpdateMenge: (RezeptZutat, Double) -> Unit,
+    onAddToShoppingList: (RezeptZutat) -> Unit
 ) {
+    var bearbeiteteZutat by remember {
+        mutableStateOf<RezeptZutat?>(null)
+    }
+
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -72,8 +79,18 @@ fun RezeptZutatenCard(
 
                     RezeptZutatRow(
                         zutat = zutat,
+                        status = zutatenStatus[zutat.artikel.id]
+                            ?: ZutatenStatus.FEHLT,
                         onDeleteClick = {
                             onDeleteClick(zutat)
+                        },
+                        onEditClick = {
+
+                            bearbeiteteZutat = zutat
+
+                        },
+                        onShoppingListClick = {
+                            onAddToShoppingList(zutat)
                         }
                     )
 
@@ -86,12 +103,63 @@ fun RezeptZutatenCard(
             }
         }
     }
+
+    if (bearbeiteteZutat != null) {
+
+        var neueMenge by remember(bearbeiteteZutat) {
+            mutableStateOf(bearbeiteteZutat!!.menge.toString())
+        }
+
+        val sheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+
+        CustomModalSheet(
+            sheetState = sheetState,
+            title = "Menge ändern",
+
+            conditionConfirmEnabled =
+                neueMenge.toDoubleOrNull() != null,
+
+            onConfirmAfterClose = {
+
+                onUpdateMenge(
+                    bearbeiteteZutat!!,
+                    neueMenge.toDouble()
+                )
+
+                bearbeiteteZutat = null
+            },
+
+            onDismissAfterClose = {
+                bearbeiteteZutat = null
+            }
+        ) {
+
+            OutlinedTextField(
+                value = neueMenge,
+
+                onValueChange = {
+                    neueMenge = it
+                },
+
+                label = {
+                    Text("Neue Menge")
+                },
+
+                singleLine = true
+            )
+        }
+    }
 }
 
 @Composable
 private fun RezeptZutatRow(
     zutat: RezeptZutat,
-    onDeleteClick: () -> Unit
+    status: ZutatenStatus,
+    onDeleteClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onShoppingListClick: () -> Unit
 ) {
 
     var expanded by remember {
@@ -110,7 +178,18 @@ private fun RezeptZutatRow(
 
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
+            color =
+                when (status) {
+
+                    ZutatenStatus.VORHANDEN ->
+                        MaterialTheme.colorScheme.primaryContainer
+
+                    ZutatenStatus.TEILWEISE ->
+                        MaterialTheme.colorScheme.tertiaryContainer
+
+                    ZutatenStatus.FEHLT ->
+                        MaterialTheme.colorScheme.errorContainer
+                }
         ) {
 
             Text(
@@ -129,7 +208,19 @@ private fun RezeptZutatRow(
 
             Text(
                 text = zutat.artikel.name,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color =
+                    when (status) {
+
+                        ZutatenStatus.VORHANDEN ->
+                            MaterialTheme.colorScheme.onSurface
+
+                        ZutatenStatus.TEILWEISE ->
+                            MaterialTheme.colorScheme.tertiary
+
+                        ZutatenStatus.FEHLT ->
+                            MaterialTheme.colorScheme.error
+                    }
             )
 
             Spacer(
@@ -170,15 +261,7 @@ private fun RezeptZutatRow(
                     },
                     onClick = {
                         expanded = false
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = {
-                        Text("Im Vorrat anzeigen")
-                    },
-                    onClick = {
-                        expanded = false
+                        onEditClick()
                     }
                 )
 
@@ -188,6 +271,7 @@ private fun RezeptZutatRow(
                     },
                     onClick = {
                         expanded = false
+                        onShoppingListClick()
                     }
                 )
 

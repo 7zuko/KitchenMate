@@ -30,7 +30,11 @@ data class ArtikelVerwaltungState(
 
 	val showAddVorratSheet: Boolean = false,
 
-	val selectedArtikelForVorrat: Artikel? = null
+	val selectedArtikelForVorrat: Artikel? = null,
+
+	val showEditVorratSheet: Boolean = false,
+
+	val artikelZumBearbeiten: VorratsArtikel? = null,
 )
 
 data class KategorieMitArtikeln(

@@ -16,11 +16,14 @@ import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.data.Artikel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
+import de.thm.smartshopping.ui.theme.defaultOutlinedTextFieldColors
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RezeptAddZutatSheet(
@@ -86,18 +89,18 @@ fun RezeptAddZutatSheet(
                 value = searchText,
 
                 onValueChange = {
-
                     searchText = it
-
                 },
 
                 label = {
-
                     Text("Artikel suchen")
-
                 },
 
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+
+                shape = RoundedCornerShape(20.dp),
+
+                colors = defaultOutlinedTextFieldColors()
 
             )
 
@@ -159,7 +162,11 @@ fun RezeptAddZutatSheet(
 
                 label = {
                     Text("Menge")
-                }
+                },
+
+                shape = RoundedCornerShape(20.dp),
+
+                colors = defaultOutlinedTextFieldColors()
             )
 
             Spacer(

@@ -1,4 +1,4 @@
-package de.thm.smartshopping.ui.composables
+package de.thm.smartshopping.ui.destinations.artikelverwaltung.composables
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -22,6 +23,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import de.thm.smartshopping.ui.composables.CustomModalSheet
+import de.thm.smartshopping.ui.theme.defaultOutlinedTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,7 +105,11 @@ fun AddVorratSheet(
 
             modifier = Modifier.fillMaxWidth(),
 
-            singleLine = true
+            singleLine = true,
+
+            shape = RoundedCornerShape(20.dp),
+
+            colors = defaultOutlinedTextFieldColors()
         )
 
         Spacer(
@@ -176,7 +183,11 @@ fun AddVorratSheet(
                 Text("Bestand")
             },
 
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+
+            shape = RoundedCornerShape(20.dp),
+
+            colors = defaultOutlinedTextFieldColors()
         )
 
         Spacer(

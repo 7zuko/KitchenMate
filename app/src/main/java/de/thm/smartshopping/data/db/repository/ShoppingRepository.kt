@@ -6,6 +6,7 @@ import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.EinkaufsArtikel
 import de.thm.smartshopping.data.Einkaufsliste
 import de.thm.smartshopping.data.Rezept
+import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.data.VorratsArtikel
 import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.map
 import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 
 class ShoppingRepository(
 	private val einkaufslisteDao: EinkaufslisteDao,
@@ -326,6 +328,24 @@ class ShoppingRepository(
 
 	}
 
+	suspend fun addArtikelToVorrat(
+		artikel: Artikel,
+		menge: Double
+	) {
+
+		val vorhandenerBestand =
+			getLagerbestandByArtikelId(artikel.id)
+				.firstOrNull()
+
+		val neueMenge =
+			(vorhandenerBestand?.menge ?: 0.0) + menge
+
+		setLagerbestand(
+			artikelId = artikel.id,
+			menge = neueMenge
+		)
+	}
+
 	fun getAllLagerbestand() =
 		lagerbestandDao.getAllLagerbestand()
 
@@ -499,6 +519,40 @@ class ShoppingRepository(
 	suspend fun createShoppingListFromRecipe(
 		rezept: Rezept
 	): String {
+		val vorrat =
+			getAllVorratsArtikel()
+				.first()
+
+		val fehlendeArtikel =
+			rezept.zutaten.mapNotNull { zutat ->
+
+				val lagerbestand =
+					vorrat.find {
+						it.artikel.id == zutat.artikel.id
+					}?.menge ?: 0.0
+
+				when {
+
+					lagerbestand >= zutat.menge ->
+						null
+
+					lagerbestand > 0.0 ->
+						EinkaufsArtikel(
+							artikel = zutat.artikel,
+							menge = zutat.menge - lagerbestand
+						)
+
+					else ->
+						EinkaufsArtikel(
+							artikel = zutat.artikel,
+							menge = zutat.menge
+						)
+				}
+			}
+
+		if (fehlendeArtikel.isEmpty()) {
+			return ""
+		}
 
 		val listId =
 			createNewEinkaufsliste(
@@ -515,12 +569,35 @@ class ShoppingRepository(
 			val neueListe =
 				it.copy(
 					artikel =
-						rezept.zutaten.map { zutat ->
+						fehlendeArtikel.toMutableList().mapNotNull { zutat ->
 
-							EinkaufsArtikel(
-								artikel = zutat.artikel,
-								menge = zutat.menge
-							)
+							val lagerbestand =
+								vorrat.find {
+									it.artikel.id == zutat.artikel.id
+								}?.menge ?: 0.0
+
+							when {
+
+								// komplett vorhanden -> nicht hinzufügen
+								lagerbestand >= zutat.menge -> null
+
+								// teilweise vorhanden -> nur Differenz
+								lagerbestand > 0.0 ->
+
+									EinkaufsArtikel(
+										artikel = zutat.artikel,
+										menge = zutat.menge - lagerbestand
+									)
+
+								// gar nicht vorhanden
+								else ->
+
+									EinkaufsArtikel(
+										artikel = zutat.artikel,
+										menge = zutat.menge
+									)
+							}
+
 						}.toMutableList()
 				)
 
@@ -528,6 +605,53 @@ class ShoppingRepository(
 		}
 
 		return listId
+	}
+
+	suspend fun addZutatToShoppingList(
+		einkaufsliste: Einkaufsliste,
+		zutat: RezeptZutat
+	) {
+
+		val aktuelleListe =
+			getEinkaufslisteById(einkaufsliste.id)
+				.firstOrNull()
+				?: return
+
+		val vorhandenerArtikel =
+			aktuelleListe.artikel.find {
+				it.artikel.id == zutat.artikel.id
+			}
+
+		val neueArtikel =
+			aktuelleListe.artikel.toMutableList()
+
+		if (vorhandenerArtikel != null) {
+
+			neueArtikel.remove(vorhandenerArtikel)
+
+			neueArtikel.add(
+				vorhandenerArtikel.copy(
+					menge =
+						vorhandenerArtikel.menge +
+								zutat.menge
+				)
+			)
+
+		} else {
+
+			neueArtikel.add(
+				EinkaufsArtikel(
+					artikel = zutat.artikel,
+					menge = zutat.menge
+				)
+			)
+		}
+
+		updateEinkaufsliste(
+			aktuelleListe.copy(
+				artikel = neueArtikel
+			)
+		)
 	}
 
 }

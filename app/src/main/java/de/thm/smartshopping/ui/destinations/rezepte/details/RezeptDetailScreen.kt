@@ -42,18 +42,35 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import coil.compose.AsyncImage
+import de.thm.smartshopping.data.RezeptZutat
+import de.thm.smartshopping.data.ZutatenStatus
 import de.thm.smartshopping.methods.navBarHeight
 import de.thm.smartshopping.ui.composables.AddArtikelSheet
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptAddToShoppingListSheet
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptBeschreibungCard
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptEditImageSheet
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptEditNameSheet
+import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptEditBeschreibungSheet
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptHeroCard
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptInfoCard
 import de.thm.smartshopping.ui.destinations.rezepte.composables.RezeptZutatenCard
+import de.thm.smartshopping.ui.destinations.rezepte.events.RezepteUiEvent
+import kotlinx.coroutines.launch
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -62,7 +79,8 @@ fun RezeptDetailScreen(
     rezeptId: String,
     state: RezepteScreenState,
     onEvent: (RezepteEvent) -> Unit,
-    navController: NavController
+    navController: NavController,
+    viewModel: RezepteViewModel = hiltViewModel()
 ) {
 
     println("Gesuchte ID: $rezeptId")
@@ -75,6 +93,44 @@ fun RezeptDetailScreen(
     val rezept =
         state.rezepte.find {
             it.id == rezeptId
+        }
+
+    if (rezept == null) {
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Rezept nicht gefunden")
+        }
+
+        return
+    }
+
+    val aktuellesRezept = rezept
+
+    val vorhandeneZutaten =
+        aktuellesRezept.zutaten.count {
+
+            state.zutatenStatus[it.artikel.id] ==
+                    ZutatenStatus.VORHANDEN
+
+        }
+
+    val teilweiseVorhandeneZutaten =
+        aktuellesRezept.zutaten.count {
+
+            state.zutatenStatus[it.artikel.id] ==
+                    ZutatenStatus.TEILWEISE
+
+        }
+
+    val fehlendeZutaten =
+        aktuellesRezept.zutaten.count {
+
+            state.zutatenStatus[it.artikel.id] ==
+                    ZutatenStatus.FEHLT
+
         }
 
     val addZutatSheetState =
@@ -94,6 +150,35 @@ fun RezeptDetailScreen(
     var pendingArtikelId by remember {
         mutableStateOf<String?>(null)
     }
+
+    var showMenu by remember {
+        mutableStateOf(false)
+    }
+
+    var showDeleteDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedShoppingZutat by remember {
+        mutableStateOf<RezeptZutat?>(null)
+    }
+
+    var showShoppingListSheet by remember {
+        mutableStateOf(false)
+    }
+
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    var showEditNameSheet by remember {
+        mutableStateOf(false)
+    }
+    var showEditBeschreibungSheet by remember {
+        mutableStateOf(false)
+    }
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.showAddZutatSheet) {
 
@@ -141,21 +226,28 @@ fun RezeptDetailScreen(
         )
     }
 
-    if (rezept == null) {
+    LaunchedEffect(Unit) {
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Rezept nicht gefunden")
+        viewModel.uiEvent.collect { event ->
+
+            when (event) {
+
+                is RezepteUiEvent.ShowSnackbar -> {
+
+                    snackbarHostState.showSnackbar(
+                        event.message
+                    )
+
+                }
+            }
         }
-
-        return
     }
 
-
-
     Scaffold(
+
+        snackbarHost = {
+            SnackbarHost(snackbarHostState)
+        },
 
         topBar = {
 
@@ -168,6 +260,21 @@ fun RezeptDetailScreen(
 
                 onNavigationIconClick = {
                     navController.popBackStack()
+                },
+
+                actions = {
+
+                    IconButton(
+                        onClick = {
+                            showDeleteDialog = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Rezept löschen",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             )
         }
@@ -187,7 +294,19 @@ fun RezeptDetailScreen(
                     .padding(16.dp)
             ) {
                 RezeptHeroCard(
-                    rezept = rezept
+                    rezept = rezept,
+                    onEditName = {
+                        showEditNameSheet = true
+                    },
+                    onEditImage = {
+
+                        onEvent(
+
+                            RezepteEvent.ShowEditImageSheet(true)
+
+                        )
+
+                    }
                 )
 
                 Spacer(
@@ -196,7 +315,11 @@ fun RezeptDetailScreen(
 
                 RezeptInfoCard(
                     zubereitungszeit = rezept.zubereitungszeit,
-                    anzahlZutaten = rezept.zutaten.size
+                    anzahlZutaten = aktuellesRezept.zutaten.size,
+                    vorhandeneZutaten = vorhandeneZutaten,
+                    teilweiseVorhandeneZutaten = teilweiseVorhandeneZutaten,
+                    fehlendeZutaten = fehlendeZutaten,
+                    schwierigkeit = rezept.schwierigkeit
                 )
 
                 Spacer(
@@ -204,7 +327,10 @@ fun RezeptDetailScreen(
                 )
 
                 RezeptBeschreibungCard(
-                    beschreibung = rezept.beschreibung
+                    beschreibung = rezept.beschreibung,
+                    onEditClick = {
+                        showEditBeschreibungSheet = true
+                    }
                 )
 
                 Spacer(
@@ -213,6 +339,7 @@ fun RezeptDetailScreen(
 
                 RezeptZutatenCard(
                     zutaten = rezept.zutaten,
+                    zutatenStatus = state.zutatenStatus,
 
                     onAddClick = {
                         onEvent(
@@ -228,7 +355,34 @@ fun RezeptDetailScreen(
                                 zutat
                             )
                         )
-                    }
+                    },
+
+                    onUpdateMenge = { zutat, neueMenge ->
+
+                        val neuesRezept = rezept.copy(
+                            zutaten = rezept.zutaten.map {
+
+                                if (it == zutat) {
+                                    it.copy(
+                                        menge = neueMenge
+                                    )
+                                } else {
+                                    it
+                                }
+                            }
+                        )
+
+                        onEvent(
+                            RezepteEvent.UpdateRezept(neuesRezept)
+                        )
+                    },
+
+                    onAddToShoppingList = { zutat ->
+
+                        selectedShoppingZutat = zutat
+
+                        showShoppingListSheet = true
+                    },
                 )
 
                 Spacer(
@@ -258,6 +412,67 @@ fun RezeptDetailScreen(
                 )
             }
         }
+    }
+
+    if (showDeleteDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showDeleteDialog = false
+            },
+
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+
+            title = {
+                Text("Rezept löschen?")
+            },
+
+            text = {
+                Text("Möchtest du dieses Rezept wirklich dauerhaft löschen?")
+            },
+
+            confirmButton = {
+
+                TextButton(
+
+                    onClick = {
+
+                        showDeleteDialog = false
+
+                        onEvent(
+                            RezepteEvent.DeleteRezept(
+                                aktuellesRezept
+                            )
+                        )
+
+                        navController.popBackStack()
+                    }
+
+                ) {
+
+                    Text("Löschen")
+
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+
+                    onClick = {
+                        showDeleteDialog = false
+                    }
+
+                ) {
+
+                    Text("Abbrechen")
+
+                }
+            }
+        )
     }
 
     if (state.showAddZutatSheet) {
@@ -313,6 +528,142 @@ fun RezeptDetailScreen(
                 )
             }
         )
+    }
+
+    if (showShoppingListSheet && selectedShoppingZutat != null) {
+
+        RezeptAddToShoppingListSheet(
+
+            sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true
+            ),
+
+            einkaufslisten = state.einkaufslisten,
+
+            onNeueListe = {
+                // kommt später
+            },
+
+            onListSelected = { liste ->
+
+                selectedShoppingZutat?.let { zutat ->
+
+                    onEvent(
+                        RezepteEvent.AddArtikelToShoppingList(
+                            einkaufsliste = liste,
+                            zutat = zutat
+                        )
+                    )
+
+                    scope.launch {
+
+                        snackbarHostState.showSnackbar(
+                            "${zutat.artikel.name} wurde zu \"${liste.name}\" hinzugefügt."
+                        )
+
+                    }
+                }
+
+                showShoppingListSheet = false
+                selectedShoppingZutat = null
+            },
+
+            onDismiss = {
+
+                showShoppingListSheet = false
+
+                selectedShoppingZutat = null
+            }
+        )
+    }
+
+    if (showEditNameSheet) {
+
+        RezeptEditNameSheet(
+
+            sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true
+            ),
+
+            rezept = rezept,
+
+            onDismiss = {
+                showEditNameSheet = false
+            },
+
+            onSave = { neuerName ->
+
+                onEvent(
+                    RezepteEvent.UpdateRezept(
+                        rezept.copy(
+                            name = neuerName
+                        )
+                    )
+                )
+
+                showEditNameSheet = false
+            }
+        )
+    }
+
+    if (showEditBeschreibungSheet) {
+
+        RezeptEditBeschreibungSheet(
+            sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true
+            ),
+            rezept = rezept,
+            onDismiss = {
+                showEditBeschreibungSheet = false
+            },
+            onSave = { neueBeschreibung ->
+
+                onEvent(
+                    RezepteEvent.UpdateRezept(
+                        rezept.copy(
+                            beschreibung = neueBeschreibung
+                        )
+                    )
+                )
+
+                showEditBeschreibungSheet = false
+            }
+        )
+    }
+
+    if (state.showEditImageSheet) {
+
+        RezeptEditImageSheet(
+
+            sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true
+            ),
+
+            onDismiss = {
+
+                onEvent(
+                    RezepteEvent.ShowEditImageSheet(false)
+                )
+
+            },
+
+            onImageSelected = { bildPfad ->
+
+                onEvent(
+                    RezepteEvent.UpdateRezept(
+                        rezept.copy(
+                            bildPfad = bildPfad
+                        )
+                    )
+                )
+
+                onEvent(
+                    RezepteEvent.ShowEditImageSheet(false)
+                )
+            }
+
+        )
+
     }
 
     if (state.showArtikelSheet) {

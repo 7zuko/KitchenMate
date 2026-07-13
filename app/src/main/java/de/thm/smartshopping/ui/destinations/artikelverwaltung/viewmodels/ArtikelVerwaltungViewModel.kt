@@ -200,6 +200,41 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 				}
 			}
 
+			is ArtikelVerwaltungEvent.DeleteVorrat -> {
+
+				viewModelScope.launch {
+
+					shoppingRepository.deleteLagerbestand(
+						event.artikelId
+					)
+
+				}
+			}
+
+			is ArtikelVerwaltungEvent.EditVorrat -> {
+
+				_state.update {
+					it.copy(
+						showEditVorratSheet = true,
+						artikelZumBearbeiten = event.vorratsArtikel
+					)
+				}
+
+			}
+
+			is ArtikelVerwaltungEvent.CloseEditVorratSheet -> {
+
+				_state.update {
+
+					it.copy(
+						showEditVorratSheet = false,
+						artikelZumBearbeiten = null
+					)
+
+				}
+
+			}
+
             else -> {}
         }
 	}

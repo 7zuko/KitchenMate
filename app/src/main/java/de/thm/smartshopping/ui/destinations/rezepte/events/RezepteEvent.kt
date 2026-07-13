@@ -2,6 +2,7 @@ package de.thm.smartshopping.ui.destinations.rezepte.events
 
 import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
+import de.thm.smartshopping.data.Einkaufsliste
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
@@ -50,5 +51,22 @@ sealed interface RezepteEvent {
 
     data class SaveKategorie(
         val kategorie: ArtikelKategorie
+    ) : RezepteEvent
+
+    data class DeleteRezept(
+        val rezept: Rezept
+    ) : RezepteEvent
+
+    data class UpdateRezept(
+        val rezept: Rezept
+    ) : RezepteEvent
+
+    data class AddArtikelToShoppingList(
+        val einkaufsliste: Einkaufsliste,
+        val zutat: RezeptZutat
+    ) : RezepteEvent
+
+    data class ShowEditImageSheet(
+        val show: Boolean
     ) : RezepteEvent
 }

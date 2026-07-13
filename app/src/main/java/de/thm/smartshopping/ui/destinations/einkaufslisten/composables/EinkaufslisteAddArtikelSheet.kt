@@ -189,7 +189,8 @@ fun EinkaufslisteAddArtikelSheet(
 							ExposedDropdownMenu(
 								modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true),
 								expanded = expandedDropdown,
-								onDismissRequest = { expandedDropdown = false }
+								onDismissRequest = { expandedDropdown = false },
+								containerColor = MaterialTheme.colorScheme.surface
 							) {
 								if (filteredArtikel.isEmpty()) {
 									DropdownMenuItem(
@@ -203,8 +204,7 @@ fun EinkaufslisteAddArtikelSheet(
 										),
 									)
 								} else {
-									HorizontalDivider()
-									filteredArtikel.take(5).forEach { artikel ->
+									filteredArtikel.forEach { artikel ->
 										DropdownMenuItem(
 											text = { Text(artikel.name) },
 											onClick = {

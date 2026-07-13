@@ -10,15 +10,31 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import androidx.lifecycle.viewModelScope
+import de.thm.smartshopping.data.Rezept
+import de.thm.smartshopping.data.VorratsArtikel
+import de.thm.smartshopping.data.ZutatenStatus
+import de.thm.smartshopping.ui.destinations.rezepte.events.RezepteUiEvent
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 @HiltViewModel
 class RezepteViewModel @Inject constructor(
     private val shoppingRepository: ShoppingRepository
 ) : ViewModel() {
 
+    private val allVorratFlow =
+        shoppingRepository.getAllVorratsArtikel()
+
     private val _state = MutableStateFlow(
         RezepteScreenState()
     )
+
+    private val _uiEvent =
+        MutableSharedFlow<RezepteUiEvent>()
+
+    val uiEvent =
+        _uiEvent.asSharedFlow()
 
     private val allRezepteFlow =
         shoppingRepository.getAllRezepte()
@@ -29,49 +45,48 @@ class RezepteViewModel @Inject constructor(
     private val allKategorienFlow =
         shoppingRepository.getAllArtikelKategorien()
 
+    private val allEinkaufslistenFlow =
+        shoppingRepository.getAllEinkaufslisten()
+
     val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
 
-            allRezepteFlow.collect { rezepte ->
+            combine(
+                allRezepteFlow,
+                allArtikelFlow,
+                allKategorienFlow,
+                allVorratFlow,
+                allEinkaufslistenFlow
+            ) { rezepte, artikel, kategorien, vorrat, einkaufslisten ->
+
+                Quintuple(
+                    rezepte,
+                    artikel,
+                    kategorien,
+                    vorrat,
+                    einkaufslisten
+                )
+
+            }.collect { (rezepte, artikel, kategorien, vorrat, einkaufslisten) ->
 
                 _state.update {
+
                     it.copy(
-                        rezepte = rezepte
+                        rezepte = rezepte,
+                        allArtikel = artikel,
+                        allKategorien = kategorien,
+                        einkaufslisten = einkaufslisten
                     )
+
                 }
 
+                updateZutatenStatus(
+                    rezepte,
+                    vorrat
+                )
             }
-
-        }
-
-        viewModelScope.launch {
-
-            allKategorienFlow.collect { kategorien ->
-
-                _state.update {
-                    it.copy(
-                        allKategorien = kategorien
-                    )
-                }
-
-            }
-
-        }
-
-        viewModelScope.launch {
-
-            allArtikelFlow.collect { artikelListe ->
-
-                _state.update {
-                    it.copy(
-                        allArtikel = artikelListe
-                    )
-                }
-
-            }
-
         }
     }
 
@@ -136,6 +151,17 @@ class RezepteViewModel @Inject constructor(
                             showCreateSheet = false
                         )
                     }
+
+                }
+            }
+
+            is RezepteEvent.UpdateRezept -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.saveRezept(
+                        event.rezept
+                    )
 
                 }
             }
@@ -210,12 +236,119 @@ class RezepteViewModel @Inject constructor(
 
                 viewModelScope.launch {
 
-                    shoppingRepository.createShoppingListFromRecipe(
-                        event.rezept
+                    val listId =
+                        shoppingRepository.createShoppingListFromRecipe(
+                            event.rezept
+                        )
+
+                    if (listId.isBlank()) {
+
+                        _uiEvent.emit(
+
+                            RezepteUiEvent.ShowSnackbar(
+                                "Alle Zutaten sind bereits im Vorrat."
+                            )
+
+                        )
+
+                    } else {
+
+                        _uiEvent.emit(
+
+                            RezepteUiEvent.ShowSnackbar(
+                                "Einkaufsliste wurde erstellt."
+                            )
+
+                        )
+
+                    }
+
+                }
+            }
+
+            is RezepteEvent.DeleteRezept -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.deleteRezept(event.rezept)
+
+                }
+            }
+
+            is RezepteEvent.AddArtikelToShoppingList -> {
+
+                viewModelScope.launch {
+
+                    shoppingRepository.addZutatToShoppingList(
+                        event.einkaufsliste,
+                        event.zutat
                     )
 
                 }
             }
+
+            is RezepteEvent.ShowEditImageSheet -> {
+
+                _state.update {
+
+                    it.copy(
+                        showEditImageSheet = event.show
+                    )
+
+                }
+
+            }
+        }
+    }
+
+    private fun updateZutatenStatus(
+        rezepte: List<Rezept>,
+        vorrat: List<VorratsArtikel>
+    ) {
+
+        val statusMap =
+            mutableMapOf<String, ZutatenStatus>()
+
+        rezepte.forEach { rezept ->
+
+            rezept.zutaten.forEach { zutat ->
+
+                val lagerbestand =
+                    vorrat.find {
+                        it.artikel.id == zutat.artikel.id
+                    }?.menge ?: 0.0
+
+                val status =
+                    when {
+
+                        lagerbestand <= 0.0 ->
+                            ZutatenStatus.FEHLT
+
+                        lagerbestand < zutat.menge ->
+                            ZutatenStatus.TEILWEISE
+
+                        else ->
+                            ZutatenStatus.VORHANDEN
+                    }
+
+                statusMap[zutat.artikel.id] = status
+            }
+        }
+
+        _state.update {
+            it.copy(
+                zutatenStatus = statusMap
+            )
         }
     }
 }
+
+
+
+private data class Quintuple<A, B, C, D, E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
+)

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
+import de.thm.smartshopping.ui.theme.defaultOutlinedTextFieldColors
 import java.util.UUID
 
 private enum class ActionState {
@@ -216,7 +218,9 @@ fun AddArtikelSheet(
                             onValueChange = { name = it },
                             label = { Text("Name") },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                            singleLine = true
+                            singleLine = true,
+                            shape = RoundedCornerShape(20.dp),
+                            colors = defaultOutlinedTextFieldColors()
                         )
 
                         Spacer(Modifier.height(12.dp))
@@ -247,7 +251,11 @@ fun AddArtikelSheet(
                                     ExposedDropdownMenuDefaults.TrailingIcon(
                                         expanded = expandedEinheit
                                     )
-                                }
+                                },
+
+                                shape = RoundedCornerShape(20.dp),
+
+                                colors = defaultOutlinedTextFieldColors()
                             )
 
                             ExposedDropdownMenu(
@@ -266,9 +274,7 @@ fun AddArtikelSheet(
                                         },
 
                                         colors = MenuDefaults.itemColors(
-
                                             textColor = MaterialTheme.colorScheme.onSurface
-
                                         ),
 
                                         onClick = {
@@ -307,7 +313,11 @@ fun AddArtikelSheet(
                                     Text("Eigene Einheit")
                                 },
 
-                                singleLine = true
+                                singleLine = true,
+
+                                shape = RoundedCornerShape(20.dp),
+
+                                colors = defaultOutlinedTextFieldColors()
                             )
                         }
 
@@ -359,7 +369,7 @@ fun AddArtikelSheet(
                             ExposedDropdownMenuBox(
                                 modifier = Modifier.weight(1f),
                                 expanded = expandedDropdown,
-                                onExpandedChange = { expandedDropdown = !expandedDropdown }
+                                onExpandedChange = { expandedDropdown = !expandedDropdown },
                             ) {
                                 OutlinedTextField(
                                     modifier = Modifier
@@ -373,12 +383,15 @@ fun AddArtikelSheet(
                                     },
                                     label = { Text("Kategorie auswählen*") },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDropdown) },
-                                    singleLine = true
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(20.dp),
+                                    colors = defaultOutlinedTextFieldColors()
                                 )
                                 ExposedDropdownMenu(
                                     modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true),
                                     expanded = expandedDropdown,
-                                    onDismissRequest = { expandedDropdown = false }
+                                    onDismissRequest = { expandedDropdown = false },
+                                    containerColor = MaterialTheme.colorScheme.surface
                                 ) {
                                     if (filteredKategorie.isEmpty()) {
                                         DropdownMenuItem(
@@ -388,9 +401,10 @@ fun AddArtikelSheet(
                                         )
                                     } else {
                                         HorizontalDivider()
-                                        filteredKategorie.take(5).forEach { kategorie ->
+                                        filteredKategorie.forEach { kategorie ->
                                             DropdownMenuItem(
-                                                text = { Text(kategorie.name) },
+                                                text = { Text(kategorie.name,
+                                                    color = MaterialTheme.colorScheme.onSurface) },
                                                 onClick = {
                                                     selectedKategorie = kategorie
                                                     filterText = kategorie.name
@@ -429,7 +443,9 @@ fun AddArtikelSheet(
                             onValueChange = { newKategorieName = it },
                             label = { Text("Name") },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                            singleLine = true
+                            singleLine = true,
+                            shape = RoundedCornerShape(20.dp),
+                            colors = defaultOutlinedTextFieldColors()
                         )
                     }
                 }

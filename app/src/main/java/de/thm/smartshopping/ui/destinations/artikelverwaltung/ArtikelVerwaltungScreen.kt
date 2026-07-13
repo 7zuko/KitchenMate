@@ -61,24 +61,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.draw.clip
 import de.thm.smartshopping.ui.composables.SearchTopBar
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import de.thm.smartshopping.ui.composables.AddVorratSheet
+import de.thm.smartshopping.data.VorratsArtikel
+import de.thm.smartshopping.ui.destinations.artikelverwaltung.composables.AddVorratSheet
+import de.thm.smartshopping.ui.destinations.artikelverwaltung.composables.EditVorratSheet
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -440,6 +433,42 @@ fun ArtikelVerwaltungScreen(
 			}
 		)
 	}
+
+	if (state.showEditVorratSheet && state.artikelZumBearbeiten != null) {
+
+		EditVorratSheet(
+
+			sheetState = rememberModalBottomSheetState(
+				skipPartiallyExpanded = true
+			),
+
+			artikel = state.artikelZumBearbeiten.artikel,
+
+			aktuelleMenge = state.artikelZumBearbeiten.menge,
+
+			onDismiss = {
+
+				onEvent(
+					ArtikelVerwaltungEvent.CloseEditVorratSheet
+				)
+
+			},
+
+			onSave = { neueMenge ->
+
+				onEvent(
+					ArtikelVerwaltungEvent.SaveVorrat(
+						artikel = state.artikelZumBearbeiten.artikel,
+						menge = neueMenge
+					)
+				)
+
+				onEvent(
+					ArtikelVerwaltungEvent.CloseEditVorratSheet
+				)
+			}
+		)
+	}
 }
 
 @Preview(showBackground = true)
@@ -554,11 +583,19 @@ fun ArtikelZeile(
 							)
 
 							DropdownMenuItem(
-								text = { Text("Löschen") },
+								text = {
+									Text(
+										"Aus Vorrat entfernen",
+										color = MaterialTheme.colorScheme.error
+									)
+								},
 								onClick = {
 									expanded = false
+
 									onEvent(
-										ArtikelVerwaltungEvent.DeleteArtikel(artikel)
+										ArtikelVerwaltungEvent.DeleteVorrat(
+											artikel.id
+										)
 									)
 								}
 							)
@@ -587,7 +624,7 @@ fun ArtikelZeile(
 					) {
 
 						Text(
-							text = "⚖\uD83D\uDCE6",
+							text = "\uD83D\uDCE6",
 							fontSize = 20.sp
 						)
 
@@ -602,47 +639,67 @@ fun ArtikelZeile(
 							)
 
 							Text(
-								text = "${bestand ?: 0.0} ${artikel.einheit ?: ""}",
+								text = "${bestand ?: 0} ${artikel.einheit ?: ""}",
 								style = MaterialTheme.typography.titleMedium
 							)
 						}
 					}
 
-					artikel.kategorie?.let {
+					ElevatedCard(
 
-						ElevatedCard(
-							shape = RoundedCornerShape(50),
+						modifier = Modifier.clickable {
 
-							colors = CardDefaults.elevatedCardColors(
-								containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+							onEvent(
+								ArtikelVerwaltungEvent.EditVorrat(
+									VorratsArtikel(
+										artikel = artikel,
+										menge = bestand ?: 0.0
+									)
+								)
+							)
+
+						},
+
+						shape = RoundedCornerShape(50.dp),
+
+						colors = CardDefaults.elevatedCardColors(
+							containerColor = MaterialTheme.colorScheme.primaryContainer
+						),
+
+						elevation = CardDefaults.elevatedCardElevation(
+							defaultElevation = 0.dp
+						)
+
+					) {
+
+						Row(
+
+							modifier = Modifier.padding(
+								horizontal = 10.dp,
+								vertical = 5.dp
 							),
 
-							elevation = CardDefaults.elevatedCardElevation(
-								defaultElevation = 0.dp
-							)
+							verticalAlignment = Alignment.CenterVertically
+
 						) {
 
-							Row(
-								modifier = Modifier.padding(
-									horizontal = 14.dp,
-									vertical = 8.dp
-								),
-								verticalAlignment = Alignment.CenterVertically
-							) {
+							Text(
+								"✏️",
+								style = MaterialTheme.typography.labelMedium
+							)
 
-								Text(
-									text = "📁"
-								)
+							Spacer(
+								Modifier.width(6.dp)
+							)
 
-								Spacer(Modifier.width(6.dp))
-
-								Text(
-									text = it.name,
-									style = MaterialTheme.typography.labelLarge
-								)
-							}
+							Text(
+								"Bestand bearbeiten",
+								style = MaterialTheme.typography.labelMedium
+							)
 						}
 					}
+
+
 				}
 			}
 		}

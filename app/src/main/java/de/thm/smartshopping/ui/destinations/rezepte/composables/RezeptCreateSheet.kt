@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +26,7 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -31,12 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import de.thm.smartshopping.data.Artikel
-import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.methods.ImageUtils
-import de.thm.smartshopping.ui.composables.AddArtikelSheet
 import de.thm.smartshopping.ui.composables.CustomModalSheet
-import de.thm.smartshopping.ui.destinations.artikelverwaltung.events.ArtikelVerwaltungEvent
+import de.thm.smartshopping.ui.theme.defaultOutlinedTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,217 +156,225 @@ fun RezeptCreateSheet(
             onDismiss()
         }
     ) {
-        OutlinedButton(
-            onClick = {
-                imagePicker.launch("image/*")
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("📷 Bild auswählen")
-        }
-
-        imageUri?.let {
-
-            AsyncImage(
-                model = it,
-                contentDescription = null,
-
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .padding(top = 12.dp),
-
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = {
-                name = it
-            },
-            label = {
-                Text("Rezeptname*")
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
-
-        OutlinedTextField(
-            value = beschreibung,
-            onValueChange = {
-                beschreibung = it
-            },
-            label = {
-                Text("Beschreibung")
-            },
-            minLines = 3,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
-
-        OutlinedTextField(
-            value = zubereitungszeit,
-            onValueChange = {
-                zubereitungszeit = it
-            },
-            label = {
-                Text("Zubereitungszeit (Minuten)")
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
-        ExposedDropdownMenuBox(
-            expanded = kategorieExpanded,
-            onExpandedChange = {
-                kategorieExpanded = !kategorieExpanded
-            },
-        ) {
-            OutlinedTextField(
-                value = kategorie,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Kategorie") },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = kategorieExpanded)
-                },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-            )
-
-            ExposedDropdownMenu(
-                expanded = kategorieExpanded,
-                onDismissRequest = { kategorieExpanded = false },
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                kategorien.forEach {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                it,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )},
-                        onClick = {
-                            kategorie = it
-                            kategorieExpanded = false
-                        }
-                    )
+            OutlinedButton(
+                onClick = {
+                    imagePicker.launch("image/*")
                 }
-            }
-        }
-        ExposedDropdownMenuBox(
-            expanded = schwierigkeitExpanded,
-            onExpandedChange = {
-                schwierigkeitExpanded = !schwierigkeitExpanded
-            }
-        ) {
-            OutlinedTextField(
-                value = schwierigkeit,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Schwierigkeit") },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = schwierigkeitExpanded)
-                },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            ExposedDropdownMenu(
-                expanded = schwierigkeitExpanded,
-                onDismissRequest = { schwierigkeitExpanded = false }
             ) {
-                schwierigkeiten.forEach {
-                    DropdownMenuItem(
-                        text = { Text(it) },
-                        onClick = {
-                            schwierigkeit = it
-                            schwierigkeitExpanded = false
-                        }
-                    )
-                }
+                Text("📷 Bild auswählen")
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        zutaten.forEach { zutat ->
-
-            Text(
-                text = "• ${zutat.artikel.name} (${zutat.menge} ${zutat.artikel.einheit ?: ""})"
-            )
-
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "🥕 Zutaten",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        if (zutaten.isEmpty()) {
-
-            Text(
-                "Noch keine Zutaten hinzugefügt.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-        } else {
-
-            zutaten.forEach { zutat ->
-
-                Row(
+            imageUri?.let {
+                AsyncImage(
+                    model = it,
+                    contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .height(180.dp)
+                        .padding(top = 12.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
-                    horizontalArrangement = Arrangement.SpaceBetween
+            OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                },
+                label = {
+                    Text("Rezeptname*")
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+
+                shape = RoundedCornerShape(20.dp),
+
+                colors = defaultOutlinedTextFieldColors()
+            )
+
+            OutlinedTextField(
+                value = beschreibung,
+                onValueChange = {
+                    beschreibung = it
+                },
+                label = {
+                    Text("Beschreibung")
+                },
+                minLines = 3,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+
+                shape = RoundedCornerShape(20.dp),
+
+                colors = defaultOutlinedTextFieldColors()
+            )
+
+            OutlinedTextField(
+                value = zubereitungszeit,
+                onValueChange = {
+                    zubereitungszeit = it
+                },
+                label = {
+                    Text("Zubereitungszeit (Minuten)")
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+
+                shape = RoundedCornerShape(20.dp),
+
+                colors = defaultOutlinedTextFieldColors()
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = kategorieExpanded,
+                onExpandedChange = {
+                    kategorieExpanded = !kategorieExpanded
+                },
+            ) {
+                OutlinedTextField(
+                    value = kategorie,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Kategorie") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = kategorieExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+
+                    shape = RoundedCornerShape(20.dp),
+
+                    colors = defaultOutlinedTextFieldColors()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = kategorieExpanded,
+                    onDismissRequest = { kategorieExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surface
                 ) {
-
-                    Text(zutat.artikel.name)
-
-                    Text(
-                        "${zutat.menge} ${zutat.artikel.einheit ?: ""}"
-                    )
+                    kategorien.forEach {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    it,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = {
+                                kategorie = it
+                                kategorieExpanded = false
+                            }
+                        )
+                    }
                 }
             }
-        }
 
-        Spacer(Modifier.height(8.dp))
+            ExposedDropdownMenuBox(
+                expanded = schwierigkeitExpanded,
+                onExpandedChange = {
+                    schwierigkeitExpanded = !schwierigkeitExpanded
+                }
+            ) {
+                OutlinedTextField(
+                    value = schwierigkeit,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Schwierigkeit") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = schwierigkeitExpanded)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
 
-        OutlinedButton(
-            modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
 
-            onClick = onAddZutatClicked
-        ) {
-            Text("➕ Zutat hinzufügen")
+                    colors = defaultOutlinedTextFieldColors()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = schwierigkeitExpanded,
+                    onDismissRequest = { schwierigkeitExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    schwierigkeiten.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it) },
+                            onClick = {
+                                schwierigkeit = it
+                                schwierigkeitExpanded = false
+                            },
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            zutaten.forEach { zutat ->
+                Text(
+                    text = "• ${zutat.artikel.name} (${zutat.menge} ${zutat.artikel.einheit ?: ""})"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "🥕 Zutaten",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            if (zutaten.isEmpty()) {
+                Text(
+                    "Noch keine Zutaten hinzugefügt.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                zutaten.forEach { zutat ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(zutat.artikel.name)
+                        Text(
+                            "${zutat.menge} ${zutat.artikel.einheit ?: ""}"
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onAddZutatClicked
+            ) {
+                Text("➕ Zutat hinzufügen")
+            }
         }
     }
 
