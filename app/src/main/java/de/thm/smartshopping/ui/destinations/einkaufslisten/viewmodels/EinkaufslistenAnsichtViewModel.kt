@@ -121,17 +121,6 @@ class EinkaufslistenAnsichtViewModel @Inject constructor(
 							notiz = if (event.einkaufsArtikel.notiz.isNullOrBlank()) null else event.einkaufsArtikel.notiz,
 							erledigt = event.einkaufsArtikel.erledigt
 						)
-
-						val wirdErledigt = !event.einkaufsArtikel.erledigt
-
-						if (wirdErledigt) {
-
-							shoppingRepository.addArtikelToVorrat(
-								artikel = event.einkaufsArtikel.artikel,
-								menge = event.einkaufsArtikel.menge
-							)
-
-						}
 					}
 				}
 			}
@@ -276,17 +265,28 @@ class EinkaufslistenAnsichtViewModel @Inject constructor(
 			}
 
 			is EinkaufslistenAnsichtEvent.ToggleArtikelErledigt -> {
+
 				val currentEinkaufsliste = _state.value.einkaufsliste
 
 				if (currentEinkaufsliste != null) {
 					viewModelScope.launch {
+
+						val wirdErledigt = !event.einkaufsArtikel.erledigt
+
 						shoppingRepository.saveEinkaufsArtikel(
-							einkaufslisteId = _state.value.einkaufsliste!!.id,
+							einkaufslisteId = currentEinkaufsliste.id,
 							artikelId = event.einkaufsArtikel.artikel.id,
 							menge = event.einkaufsArtikel.menge,
 							notiz = event.einkaufsArtikel.notiz,
-							erledigt = !event.einkaufsArtikel.erledigt,
+							erledigt = wirdErledigt
 						)
+
+						if (wirdErledigt) {
+							shoppingRepository.addArtikelToVorrat(
+								artikel = event.einkaufsArtikel.artikel,
+								menge = event.einkaufsArtikel.menge
+							)
+						}
 					}
 				}
 			}

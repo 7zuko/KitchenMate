@@ -568,37 +568,7 @@ class ShoppingRepository(
 
 			val neueListe =
 				it.copy(
-					artikel =
-						fehlendeArtikel.toMutableList().mapNotNull { zutat ->
-
-							val lagerbestand =
-								vorrat.find {
-									it.artikel.id == zutat.artikel.id
-								}?.menge ?: 0.0
-
-							when {
-
-								// komplett vorhanden -> nicht hinzufügen
-								lagerbestand >= zutat.menge -> null
-
-								// teilweise vorhanden -> nur Differenz
-								lagerbestand > 0.0 ->
-
-									EinkaufsArtikel(
-										artikel = zutat.artikel,
-										menge = zutat.menge - lagerbestand
-									)
-
-								// gar nicht vorhanden
-								else ->
-
-									EinkaufsArtikel(
-										artikel = zutat.artikel,
-										menge = zutat.menge
-									)
-							}
-
-						}.toMutableList()
+					artikel = fehlendeArtikel.toMutableList()
 				)
 
 			updateEinkaufsliste(neueListe)
