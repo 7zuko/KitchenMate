@@ -1,9 +1,11 @@
 package de.thm.smartshopping
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -74,8 +76,14 @@ import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Home
 import de.thm.smartshopping.ui.destinations.rezepte.viewmodels.RezepteViewModel
 import androidx.compose.runtime.remember
+import de.thm.smartshopping.ui.destinations.dashboard.DashboardScreen
+import de.thm.smartshopping.ui.destinations.speiseplan.SpeiseplanScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -96,6 +104,12 @@ sealed class NavDestination(
 	val selectedIcon: ImageVector,
 	val unselectedIcon: ImageVector,
 ) {
+	object Dashboard : NavDestination(
+		title = "Start",
+		route = "dashboard",
+		selectedIcon = Icons.Default.Home,
+		unselectedIcon = Icons.Outlined.Home
+	)
 	object Verwaltung : NavDestination(
 		title = "Verwaltung",
 		route = "artikelverwaltung",
@@ -110,6 +124,13 @@ sealed class NavDestination(
 		unselectedIcon = Icons.AutoMirrored.Outlined.MenuBook
 	)
 
+	object Speiseplan : NavDestination(
+		title = "Speiseplan",
+		route = "speiseplan",
+		selectedIcon = Icons.Filled.CalendarMonth,
+		unselectedIcon = Icons.Outlined.CalendarMonth
+	)
+
 	object Einkaufslisten : NavDestination(
 		title = "Einkaufslisten",
 		route = "einkaufslisten",
@@ -120,8 +141,10 @@ sealed class NavDestination(
 	companion object {
 		fun fromRoute(route: String?): NavDestination? {
 			return when (route) {
+				Dashboard.route -> Dashboard
 				Verwaltung.route -> Verwaltung
 				Rezepte.route -> Rezepte
+				Speiseplan.route -> Speiseplan
 				Einkaufslisten.route -> Einkaufslisten
 				else -> null
 			}
@@ -129,21 +152,24 @@ sealed class NavDestination(
 	}
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainScreen(
 	viewModel: DashboardViewModel = hiltViewModel(),
 ) {
 	//NavBar
 	val items = listOf(
+		NavDestination.Dashboard,
 		NavDestination.Verwaltung,
 		NavDestination.Rezepte,
+		NavDestination.Speiseplan,
 		NavDestination.Einkaufslisten
 	)
 
 	//NavController
 	val navController = rememberNavController()
 
-	val startRoute = NavDestination.Einkaufslisten
+	val startRoute = NavDestination.Dashboard
 
 	val navBackStackEntry by navController.currentBackStackEntryAsState()
 	val currentRoute: String? = navBackStackEntry?.destination?.route
@@ -161,8 +187,8 @@ fun MainScreen(
 	var selectedRoute by remember { mutableStateOf(startRoute.route) }
 
 	//NavBar animation logic
-	var oldItemIndex by remember { mutableIntStateOf(2) }
-	var selectedItemIndex by remember { mutableIntStateOf(2) }
+	var oldItemIndex by remember { mutableIntStateOf(0) }
+	var selectedItemIndex by remember { mutableIntStateOf(0) }
 
 	val uiState by viewModel.initialCheckUiState.collectAsState()
 	var navigationAttempted by remember { mutableStateOf(false) }
@@ -261,6 +287,12 @@ fun MainScreen(
 					}
 				}
 			) {
+				composable(route = NavDestination.Dashboard.route) {
+					DashboardScreen(
+						navController = navController
+					)
+				}
+
 				composable(route = NavDestination.Verwaltung.route) {
 					val viewModel: ArtikelVerwaltungViewModel = hiltViewModel()
 					val state by viewModel.state.collectAsState()
@@ -325,6 +357,15 @@ fun MainScreen(
 						}
 					}
 				}
+
+				composable(
+					route = NavDestination.Speiseplan.route
+				) {
+
+					SpeiseplanScreen()
+
+				}
+
 				//Einkaufslisten
 				composable(route = NavDestination.Einkaufslisten.route) {
 					val viewModel: EinkaufslistenViewModel = hiltViewModel()
