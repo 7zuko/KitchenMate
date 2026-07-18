@@ -8,12 +8,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import de.thm.smartshopping.DashboardTopAppBar
@@ -36,14 +37,6 @@ private val days = listOf(
     "Freitag",
     "Samstag",
     "Sonntag"
-)
-
-val recipes = listOf(
-    "Spaghetti Bolognese",
-    "Lasagne",
-    "Pizza Margherita",
-    "Chili con Carne",
-    "Caesar Salad"
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -80,96 +73,76 @@ fun SpeiseplanScreen() {
         }
     ) { paddingValues ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            contentPadding = PaddingValues(
+                top = 20.dp,
+                bottom = 120.dp
+            )
         ) {
 
-            Text(
-                text = "Plane deine Woche",
-                style = MaterialTheme.typography.headlineSmall
-            )
+            item {
 
-            Text(
-                text = "Wähle einen Tag und plane deine Mahlzeiten.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
 
-            WeekSelector(
-                selectedDay = state.selectedDay,
-                onDaySelected = {
-                    viewModel.onEvent(
-                        SpeiseplanEvent.SelectDay(it)
+                    Text(
+                        text = "Plane deine Woche",
+                        style = MaterialTheme.typography.headlineSmall
                     )
-                }
-            )
 
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-
-                item {
-
-                    DayPlanCard(
-                        day = days[state.selectedDay],
-                        date = formattedDate,
-                        isToday = isToday,
-                        mealPlans = state.mealPlans,
-                        selectedDay = state.selectedDay,
-                        onAddMeal = { meal ->
-
-                            viewModel.onEvent(
-                                SpeiseplanEvent.ShowRecipeSheet(
-                                    show = true,
-                                    meal = meal
-                                )
-                            )
-
-                        },
-                        onCreateShoppingList = {
-
-                            viewModel.onEvent(
-
-                                SpeiseplanEvent.CreateShoppingListFromDay
-
-                            )
-
-                        }
+                    Text(
+                        text = "Wähle einen Tag und plane deine Mahlzeiten.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                 }
 
             }
 
-            WeekShoppingListCard(
-                onCreateShoppingList = {
-                    viewModel.onEvent(
-                        SpeiseplanEvent.CreateShoppingListFromWeek
-                    )
-                }
-            )
+            item {
 
-            if (state.showRecipeSheet) {
-
-                RecipePickerBottomSheet(
-                    recipes = state.rezepte,
-
-                    onRecipeSelected = { rezept ->
-
+                WeekSelector(
+                    selectedDay = state.selectedDay,
+                    onDaySelected = {
                         viewModel.onEvent(
-                            SpeiseplanEvent.SelectRecipe(rezept)
+                            SpeiseplanEvent.SelectDay(it)
                         )
+                    }
+                )
 
-                    },
+            }
 
-                    onDismiss = {
+
+            item {
+
+                DayPlanCard(
+                    day = days[state.selectedDay],
+                    date = formattedDate,
+                    isToday = isToday,
+                    mealPlans = state.mealPlans,
+                    selectedDay = state.selectedDay,
+                    onAddMeal = { meal ->
 
                         viewModel.onEvent(
-                            SpeiseplanEvent.ShowRecipeSheet(false)
+                            SpeiseplanEvent.ShowRecipeSheet(
+                                show = true,
+                                meal = meal
+                            )
+                        )
+                    },
+                    onCreateShoppingList = {
+
+                        viewModel.onEvent(
+
+                            SpeiseplanEvent.CreateShoppingListFromDay
+
                         )
 
                     }
@@ -177,8 +150,38 @@ fun SpeiseplanScreen() {
 
             }
 
+            item {
+
+                WeekShoppingListCard(
+                    onCreateShoppingList = {
+                        viewModel.onEvent(
+                            SpeiseplanEvent.CreateShoppingListFromWeek
+                        )
+                    },
+                )
+
+            }
         }
 
-    }
+        if (state.showRecipeSheet) {
 
+            RecipePickerBottomSheet(
+                recipes = state.rezepte,
+
+                onRecipeSelected = { rezept ->
+
+                    viewModel.onEvent(
+                        SpeiseplanEvent.SelectRecipe(rezept)
+                    )
+                                   },
+
+                onDismiss = {
+
+                    viewModel.onEvent(
+                        SpeiseplanEvent.ShowRecipeSheet(false)
+                    )
+                }
+            )
+        }
+    }
 }

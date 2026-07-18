@@ -67,6 +67,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import de.thm.smartshopping.ui.composables.SearchTopBar
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import de.thm.smartshopping.data.VorratsArtikel
@@ -683,23 +684,13 @@ fun ArtikelZeile(
 
 						) {
 
-							Text(
-								"✏️",
-								style = MaterialTheme.typography.labelMedium
-							)
-
-							Spacer(
-								Modifier.width(6.dp)
-							)
-
-							Text(
-								"Bestand bearbeiten",
-								style = MaterialTheme.typography.labelMedium
+							Icon(
+								imageVector = Icons.Outlined.Edit,
+								contentDescription = null,
+								modifier = Modifier.size(18.dp)
 							)
 						}
 					}
-
-
 				}
 			}
 		}
