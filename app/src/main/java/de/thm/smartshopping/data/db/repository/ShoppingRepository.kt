@@ -5,6 +5,7 @@ import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.EinkaufsArtikel
 import de.thm.smartshopping.data.Einkaufsliste
+import de.thm.smartshopping.data.MealPlan
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.data.VorratsArtikel
@@ -12,6 +13,7 @@ import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
 import de.thm.smartshopping.data.db.dao.EinkaufslisteDao
 import de.thm.smartshopping.data.db.dao.LagerbestandDao
+import de.thm.smartshopping.data.db.dao.MealPlanDao
 import de.thm.smartshopping.data.db.dao.RezeptDao
 import de.thm.smartshopping.data.db.entity.RezeptEntity
 import de.thm.smartshopping.data.db.mappers.toEntity
@@ -23,6 +25,7 @@ import de.thm.smartshopping.data.db.entity.LagerbestandEntity
 import de.thm.smartshopping.data.db.mappers.toArtikelEntities
 import de.thm.smartshopping.data.db.mappers.toEinkaufsArtikelEntities
 import de.thm.smartshopping.data.db.mappers.toRezeptZutatEntities
+import de.thm.smartshopping.ui.destinations.speiseplan.models.MealType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -40,7 +43,8 @@ class ShoppingRepository(
 	private val artikelDao: ArtikelDao,
 	private val artikelKategorieDao: ArtikelKategorieDao,
 	private val rezeptDao: RezeptDao,
-	private val lagerbestandDao: LagerbestandDao
+	private val lagerbestandDao: LagerbestandDao,
+	private val mealPlanDao: MealPlanDao
 ) {
 
 	//Einkaufsliste
@@ -519,36 +523,11 @@ class ShoppingRepository(
 	suspend fun createShoppingListFromRecipe(
 		rezept: Rezept
 	): String {
-		val vorrat =
-			getAllVorratsArtikel()
-				.first()
 
 		val fehlendeArtikel =
-			rezept.zutaten.mapNotNull { zutat ->
-
-				val lagerbestand =
-					vorrat.find {
-						it.artikel.id == zutat.artikel.id
-					}?.menge ?: 0.0
-
-				when {
-
-					lagerbestand >= zutat.menge ->
-						null
-
-					lagerbestand > 0.0 ->
-						EinkaufsArtikel(
-							artikel = zutat.artikel,
-							menge = zutat.menge - lagerbestand
-						)
-
-					else ->
-						EinkaufsArtikel(
-							artikel = zutat.artikel,
-							menge = zutat.menge
-						)
-				}
-			}
+			calculateMissingArticles(
+				rezept.zutaten
+			)
 
 		if (fehlendeArtikel.isEmpty()) {
 			return ""
@@ -624,4 +603,241 @@ class ShoppingRepository(
 		)
 	}
 
+	suspend fun saveMealPlan(
+		mealPlan: MealPlan
+	) {
+
+		mealPlanDao.deleteMealPlan(
+			mealPlan.day,
+			mealPlan.mealType.name
+		)
+
+		mealPlanDao.insertMealPlan(
+			mealPlan.toEntity()
+		)
+
+	}
+
+	suspend fun deleteMealPlan(
+		day: Int,
+		mealType: MealType
+	) {
+
+		mealPlanDao.deleteMealPlan(
+			day,
+			mealType.name
+		)
+
+	}
+
+	fun getAllMealPlans(): Flow<List<MealPlan>> {
+
+		return combine(
+
+			mealPlanDao.getAllMealPlans(),
+
+			getAllRezepte()
+
+		) { mealPlans, rezepte ->
+
+			mealPlans.mapNotNull { entity ->
+
+				val rezept = rezepte.find {
+
+					it.id == entity.rezeptId
+
+				}
+
+				rezept?.let {
+
+					entity.toDomain(it)
+
+				}
+
+			}
+
+		}
+
+	}
+
+	suspend fun getRezepteFromDay(
+		day: Int
+	): List<Rezept> {
+
+		return getAllMealPlans()
+			.first()
+			.filter {
+
+				it.day == day
+
+			}
+			.map {
+
+				it.rezept
+
+			}
+
+	}
+
+	private fun combineIngredients(
+		rezepte: List<Rezept>
+	): List<RezeptZutat> {
+
+		return rezepte
+
+			.flatMap { it.zutaten }
+
+			.groupBy {
+
+				it.artikel.id
+
+			}
+
+			.map { (_, zutaten) ->
+
+				zutaten.first().copy(
+
+					menge =
+						zutaten.sumOf {
+
+							it.menge
+
+						}
+
+				)
+			}
+
+	}
+
+	private suspend fun calculateMissingArticles(
+		zutaten: List<RezeptZutat>
+	): List<EinkaufsArtikel> {
+
+		val vorrat =
+			getAllVorratsArtikel()
+				.first()
+
+		return zutaten.mapNotNull { zutat ->
+
+			val lagerbestand =
+				vorrat.find {
+					it.artikel.id == zutat.artikel.id
+				}?.menge ?: 0.0
+
+			when {
+
+				lagerbestand >= zutat.menge ->
+					null
+
+				lagerbestand > 0.0 ->
+					EinkaufsArtikel(
+						artikel = zutat.artikel,
+						menge = zutat.menge - lagerbestand
+					)
+
+				else ->
+					EinkaufsArtikel(
+						artikel = zutat.artikel,
+						menge = zutat.menge
+					)
+
+			}
+		}
+	}
+
+	suspend fun createShoppingListFromDay(
+		day: Int
+	): String {
+
+		val rezepte =
+			getRezepteFromDay(day)
+
+		val zutaten =
+			combineIngredients(rezepte)
+
+		val fehlendeArtikel =
+			calculateMissingArticles(
+				zutaten
+			)
+
+		if (fehlendeArtikel.isEmpty()) {
+			return ""
+		}
+
+		val listId =
+			createNewEinkaufsliste(
+				name = "Speiseplan Tag ${day + 1}",
+				erstellerId = null
+			)
+
+		val einkaufsliste =
+			getEinkaufslisteById(listId)
+				.firstOrNull()
+
+		einkaufsliste?.let {
+
+			updateEinkaufsliste(
+
+				it.copy(
+					artikel = fehlendeArtikel.toMutableList()
+				)
+
+			)
+
+		}
+
+		return listId
+	}
+
+	private suspend fun getRezepteFromWeek(): List<Rezept> {
+
+		return getAllMealPlans()
+			.first()
+			.map { it.rezept }
+
+	}
+
+	suspend fun createShoppingListFromWeek(): String {
+
+		val rezepte =
+			getRezepteFromWeek()
+
+		if (rezepte.isEmpty()) {
+			return ""
+		}
+
+		val zutaten =
+			combineIngredients(rezepte)
+
+		val fehlendeArtikel =
+			calculateMissingArticles(zutaten)
+
+		if (fehlendeArtikel.isEmpty()) {
+			return ""
+		}
+
+		val listId =
+			createNewEinkaufsliste(
+				name = "Speiseplan Woche",
+				erstellerId = null
+			)
+
+		val einkaufsliste =
+			getEinkaufslisteById(listId)
+				.firstOrNull()
+
+		einkaufsliste?.let {
+
+			updateEinkaufsliste(
+
+				it.copy(
+					artikel = fehlendeArtikel.toMutableList()
+				)
+
+			)
+
+		}
+
+		return listId
+	}
 }

@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import de.thm.smartshopping.DashboardTopAppBar
 import de.thm.smartshopping.NavDestination
 import de.thm.smartshopping.R
@@ -86,9 +87,9 @@ fun DashboardScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(20.dp),
+                .padding(horizontal = 20.dp, vertical = 12.dp),
 
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
             val currentDate = DateTimeFormatter
@@ -97,7 +98,7 @@ fun DashboardScreen(
 
             Text(
                 text = greeting(),
-                style = MaterialTheme.typography.headlineLarge
+                style = MaterialTheme.typography.headlineMedium
             )
 
             Text(
@@ -118,7 +119,7 @@ fun DashboardScreen(
 
             HeuteCard()
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             val dashboardItems = listOf(
 
@@ -176,14 +177,13 @@ fun DashboardScreen(
                         containerColor = item.color
                     ) {
 
-                        if (item.route == "speiseplan") {
+                        navController.navigate(item.route) {
 
-                            // kommt später
-
-                        } else {
-
-                            navController.navigate(item.route)
-
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
 
                     }
@@ -212,13 +212,16 @@ private fun HeuteCard() {
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
-        )
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF8F5F0)
+        ),
     ) {
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 

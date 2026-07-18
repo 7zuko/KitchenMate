@@ -13,6 +13,7 @@ import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
 import de.thm.smartshopping.data.db.dao.EinkaufslisteDao
 import de.thm.smartshopping.data.db.dao.LagerbestandDao
+import de.thm.smartshopping.data.db.dao.MealPlanDao
 import de.thm.smartshopping.data.db.dao.RezeptDao
 import de.thm.smartshopping.data.db.repository.ShoppingRepository
 import javax.inject.Singleton
@@ -64,13 +65,20 @@ object AppModule {
 	}
 
 	@Provides
+	fun provideMealPlanDao(
+		database: AppDatabase
+	): MealPlanDao =
+		database.mealPlanDao()
+
+	@Provides
 	@Singleton
 	fun provideShoppingRepository(
 		einkaufslisteDao: EinkaufslisteDao,
 		artikelDao: ArtikelDao,
 		artikelKategorieDao: ArtikelKategorieDao,
 		rezeptDao: RezeptDao,
-		lagerbestandDao: LagerbestandDao
+		lagerbestandDao: LagerbestandDao,
+		mealPlanDao: MealPlanDao
 	): ShoppingRepository {
 
 		return ShoppingRepository(
@@ -78,7 +86,8 @@ object AppModule {
 			artikelDao,
 			artikelKategorieDao,
 			rezeptDao,
-			lagerbestandDao
+			lagerbestandDao,
+			mealPlanDao
 		)
 	}
 

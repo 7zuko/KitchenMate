@@ -87,7 +87,8 @@ import de.thm.smartshopping.ui.destinations.speiseplan.SpeiseplanScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-	override fun onCreate(savedInstanceState: Bundle?) {
+	@RequiresApi(Build.VERSION_CODES.O)
+    override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
 		setContent {
@@ -132,7 +133,7 @@ sealed class NavDestination(
 	)
 
 	object Einkaufslisten : NavDestination(
-		title = "Einkaufslisten",
+		title = "Einkaufen",
 		route = "einkaufslisten",
 		selectedIcon = Icons.Filled.ShoppingCart,
 		unselectedIcon = Icons.Outlined.ShoppingCart
@@ -183,9 +184,6 @@ fun MainScreen(
 		tempRoute = currentRoute
 	}
 
-	//always have current main route selected
-	var selectedRoute by remember { mutableStateOf(startRoute.route) }
-
 	//NavBar animation logic
 	var oldItemIndex by remember { mutableIntStateOf(0) }
 	var selectedItemIndex by remember { mutableIntStateOf(0) }
@@ -233,16 +231,19 @@ fun MainScreen(
 							NavigationBarItem(
 								icon = {
 									Icon(
-										imageVector = if (screen.route == selectedRoute) screen.selectedIcon else screen.unselectedIcon,
+										imageVector =
+											if (currentRoute == screen.route)
+												screen.selectedIcon
+											else
+												screen.unselectedIcon,
 										contentDescription = screen.title
 									)
 								},
 								label = { Text(screen.title) },
-								selected = selectedRoute == screen.route,
+								selected = currentRoute == screen.route,
 								onClick = {
 									oldItemIndex = selectedItemIndex
 									selectedItemIndex = index
-									selectedRoute = screen.route
 
 									navController.navigate(screen.route) {
 										popUpTo(navController.graph.findStartDestination().id) {

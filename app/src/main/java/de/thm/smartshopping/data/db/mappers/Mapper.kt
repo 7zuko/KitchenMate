@@ -4,14 +4,17 @@ import de.thm.smartshopping.data.Artikel
 import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.EinkaufsArtikel
 import de.thm.smartshopping.data.Einkaufsliste
+import de.thm.smartshopping.data.MealPlan
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.db.entity.ArtikelEntity
 import de.thm.smartshopping.data.db.entity.ArtikelKategorieEntity
 import de.thm.smartshopping.data.db.entity.EinkaufsArtikelCrossRef
 import de.thm.smartshopping.data.db.entity.EinkaufslisteEntity
+import de.thm.smartshopping.data.db.entity.MealPlanEntity
 import de.thm.smartshopping.data.db.entity.RezeptEntity
 import de.thm.smartshopping.data.db.entity.RezeptZutatEntity
 import de.thm.smartshopping.data.db.relation.EinkaufslisteWithCrossRefs
+import de.thm.smartshopping.ui.destinations.speiseplan.models.MealType
 import java.sql.Date
 
 fun EinkaufsArtikelCrossRef.toDomain(artikelEntity: ArtikelEntity, artikelKategorie: ArtikelKategorie?): EinkaufsArtikel {
@@ -169,5 +172,37 @@ fun RezeptEntity.toDomain() =
 		kategorie = kategorie,
 
 		bildPfad = bildPfad
+
+	)
+
+fun MealPlan.toEntity() =
+
+	MealPlanEntity(
+
+		id = id,
+
+		day = day,
+
+		mealType = mealType.name,
+
+		rezeptId = rezept.id
+
+	)
+
+fun MealPlanEntity.toDomain(
+
+	rezept: Rezept
+
+) =
+
+	MealPlan(
+
+		id = id,
+
+		day = day,
+
+		mealType = MealType.valueOf(mealType),
+
+		rezept = rezept
 
 	)

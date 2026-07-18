@@ -37,6 +37,10 @@ fun DashboardCard(
 
         shape = RoundedCornerShape(24.dp),
 
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor
+        ),
+
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         )

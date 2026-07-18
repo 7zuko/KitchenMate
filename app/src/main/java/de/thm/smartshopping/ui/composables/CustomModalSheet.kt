@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.theme.SmartShoppingTheme
 import kotlinx.coroutines.launch
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +57,7 @@ fun CustomModalSheet(
 		sheetState = sheetState,
 		onDismissRequest = onDismissAfterClose,
 
-		containerColor = MaterialTheme.colorScheme.surface,
+		containerColor = Color(0xFFF8F5F0),
 
 		dragHandle = {
 			Box(
@@ -65,7 +66,7 @@ fun CustomModalSheet(
 					.width(48.dp)
 					.height(4.dp)
 					.background(
-						MaterialTheme.colorScheme.outlineVariant,
+						Color(0xFFC8BFB3),
 						shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
 					)
 			)
@@ -88,7 +89,8 @@ fun CustomModalSheet(
 			)
 
 			HorizontalDivider(
-				modifier = Modifier.padding(bottom = 16.dp)
+				modifier = Modifier.padding(bottom = 16.dp),
+				color = Color(0xFFE6DED2)
 			)
 
 			Box(

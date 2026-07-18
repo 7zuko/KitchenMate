@@ -12,12 +12,14 @@ import de.thm.smartshopping.data.db.dao.ArtikelDao
 import de.thm.smartshopping.data.db.dao.ArtikelKategorieDao
 import de.thm.smartshopping.data.db.dao.EinkaufslisteDao
 import de.thm.smartshopping.data.db.dao.LagerbestandDao
+import de.thm.smartshopping.data.db.dao.MealPlanDao
 import de.thm.smartshopping.data.db.entity.ArtikelEntity
 import de.thm.smartshopping.data.db.entity.ArtikelKategorieEntity
 import de.thm.smartshopping.data.db.entity.EinkaufsArtikelCrossRef
 import de.thm.smartshopping.data.db.entity.EinkaufslisteEntity
 import de.thm.smartshopping.data.db.entity.RezeptZutatEntity
 import de.thm.smartshopping.data.db.entity.LagerbestandEntity
+import de.thm.smartshopping.data.db.entity.MealPlanEntity
 import de.thm.smartshopping.data.db.dao.RezeptDao
 import de.thm.smartshopping.data.db.entity.RezeptEntity
 import kotlinx.coroutines.CoroutineScope
@@ -33,9 +35,10 @@ import java.util.UUID
 		EinkaufsArtikelCrossRef::class,
 		RezeptEntity::class,
 		RezeptZutatEntity::class,
-		LagerbestandEntity::class
+		LagerbestandEntity::class,
+		MealPlanEntity::class
 	],
-	version = 6,
+	version = 7,
 	exportSchema = true
 )
 @TypeConverters(
@@ -49,6 +52,7 @@ abstract class AppDatabase: RoomDatabase() {
 	abstract fun artikelDao(): ArtikelDao
 	abstract fun artikelKategorieDao(): ArtikelKategorieDao
 	abstract fun rezeptDao(): RezeptDao
+	abstract fun mealPlanDao(): MealPlanDao
 	abstract fun lagerbestandDao(): LagerbestandDao
 
 	@Volatile
