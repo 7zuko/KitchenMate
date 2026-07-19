@@ -204,17 +204,25 @@ fun MainScreen(
 	}
 
 	if (uiState.isLoading) {
-		Column(
-			horizontalAlignment = Alignment.CenterHorizontally
+
+		Box(
+			modifier = Modifier.fillMaxSize(),
+			contentAlignment = Alignment.Center
 		) {
-			CircularProgressIndicator()
 
-			Spacer(Modifier.height(16.dp))
+			Column(
+				horizontalAlignment = Alignment.CenterHorizontally
+			) {
 
-			Text(
-				"Kitchen Mate lädt...",
-				style = MaterialTheme.typography.bodyLarge
-			)
+				CircularProgressIndicator()
+
+				Spacer(Modifier.height(16.dp))
+
+				Text(
+					text = "KitchenMate lädt...",
+					style = MaterialTheme.typography.bodyLarge
+				)
+			}
 		}
 	} else {
 		Scaffold(

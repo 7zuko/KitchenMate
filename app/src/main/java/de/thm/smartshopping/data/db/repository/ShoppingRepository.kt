@@ -660,6 +660,22 @@ class ShoppingRepository(
 
 	}
 
+	fun getMealPlansFromDay(
+		day: Int
+	): Flow<List<MealPlan>> {
+
+		return getAllMealPlans().map { mealPlans ->
+
+			mealPlans.filter {
+
+				it.day == day
+
+			}
+
+		}
+
+	}
+
 	suspend fun getRezepteFromDay(
 		day: Int
 	): List<Rezept> {

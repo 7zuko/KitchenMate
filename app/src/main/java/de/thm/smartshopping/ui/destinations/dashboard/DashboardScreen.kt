@@ -31,16 +31,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import de.thm.smartshopping.DashboardTopAppBar
+import de.thm.smartshopping.DashboardViewModel
 import de.thm.smartshopping.NavDestination
 import de.thm.smartshopping.R
+import de.thm.smartshopping.data.MealPlan
+import de.thm.smartshopping.ui.destinations.speiseplan.models.MealType
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -51,7 +57,6 @@ data class DashboardItem(
     val route: String,
     val color: Color
 )
-
 @RequiresApi(Build.VERSION_CODES.O)
 private fun greeting(): String {
 
@@ -71,6 +76,10 @@ private fun greeting(): String {
 fun DashboardScreen(
     navController: NavController
 ) {
+
+    val viewModel: DashboardViewModel = hiltViewModel()
+
+    val todayMealPlans by viewModel.todayMealPlans.collectAsState()
 
     Scaffold(
         topBar = {
@@ -117,7 +126,9 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            HeuteCard()
+            HeuteCard(
+                mealPlans = todayMealPlans
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -205,7 +216,33 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeuteCard() {
+private fun HeuteCard(
+    mealPlans: List<MealPlan>
+) {
+    val currentMealType = when (LocalTime.now().hour) {
+        in 2..9 -> MealType.BREAKFAST
+        in 10..17 -> MealType.LUNCH
+        else -> MealType.DINNER
+    }
+
+    val currentMeal = mealPlans.find {
+        it.mealType == currentMealType
+    }
+
+    val breakfast =
+        mealPlans.find {
+            it.mealType == MealType.BREAKFAST
+        }
+
+    val lunch =
+        mealPlans.find {
+            it.mealType == MealType.LUNCH
+        }
+
+    val dinner =
+        mealPlans.find {
+            it.mealType == MealType.DINNER
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -221,7 +258,7 @@ private fun HeuteCard() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(horizontal = 18.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -237,19 +274,23 @@ private fun HeuteCard() {
             Column {
 
                 Text(
-                    text = "Heute",
+                    text = when (currentMealType) {
+                        MealType.BREAKFAST -> "🥣 Frühstück"
+                        MealType.LUNCH -> "🍝 Mittagessen"
+                        MealType.DINNER -> "🌙 Abendessen"
+                    },
                     style = MaterialTheme.typography.titleLarge
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Noch kein Gericht geplant.",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = currentMeal?.rezept?.name ?: "Noch nichts geplant",
+                    style = MaterialTheme.typography.bodyLarge
                 )
 
                 Text(
-                    text = "Plane deine erste Woche im Speiseplan.",
+                    text = "Passe deinen Speiseplan jederzeit an.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
