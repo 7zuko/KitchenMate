@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import de.thm.smartshopping.DashboardTopAppBar
 import de.thm.smartshopping.ui.destinations.speiseplan.components.DayPlanCard
 import de.thm.smartshopping.ui.destinations.speiseplan.components.RecipePickerBottomSheet
+import de.thm.smartshopping.ui.destinations.speiseplan.components.RecommendationCard
 import de.thm.smartshopping.ui.destinations.speiseplan.components.WeekSelector
 import de.thm.smartshopping.ui.destinations.speiseplan.components.WeekShoppingListCard
 import de.thm.smartshopping.ui.destinations.speiseplan.events.SpeiseplanEvent
@@ -115,6 +116,16 @@ fun SpeiseplanScreen() {
                             SpeiseplanEvent.SelectDay(it)
                         )
                     }
+                )
+
+            }
+
+            item {
+
+                RecommendationCard(
+
+                    recommendations = state.recommendations
+
                 )
 
             }

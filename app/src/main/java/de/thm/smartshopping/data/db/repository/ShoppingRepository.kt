@@ -6,6 +6,7 @@ import de.thm.smartshopping.data.ArtikelKategorie
 import de.thm.smartshopping.data.EinkaufsArtikel
 import de.thm.smartshopping.data.Einkaufsliste
 import de.thm.smartshopping.data.MealPlan
+import de.thm.smartshopping.data.RecipeRecommendation
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.RezeptZutat
 import de.thm.smartshopping.data.VorratsArtikel
@@ -827,6 +828,172 @@ class ShoppingRepository(
 
 			}
 		}
+	}
+
+	private fun calculateRecipeScore(
+		rezept: Rezept,
+		vorrat: List<VorratsArtikel>
+	): RecipeRecommendation {
+
+		var score = 0
+
+		val verwendeteArtikel = mutableListOf<Artikel>()
+		val fehlendeArtikel = mutableListOf<Artikel>()
+
+		val gruende = mutableListOf<String>()
+
+		rezept.zutaten.forEach { zutat ->
+
+			val lagerbestand = vorrat.find {
+				it.artikel.id == zutat.artikel.id
+			}
+
+			if (
+				lagerbestand == null ||
+				lagerbestand.menge <= 0.0
+			) {
+
+				score -= 15
+
+				fehlendeArtikel.add(
+					zutat.artikel
+				)
+
+				return@forEach
+			}
+
+			verwendeteArtikel.add(
+				zutat.artikel
+			)
+
+			score += 10
+
+			val mhd =
+				lagerbestand.mindesthaltbarBis
+
+			if (mhd != null) {
+
+				val resttage = TimeUnit.MILLISECONDS.toDays(
+					mhd - System.currentTimeMillis()
+				)
+
+				when {
+
+					resttage < 0 -> {
+
+						score += 100
+
+						gruende.add(
+							"${zutat.artikel.name} ist bereits abgelaufen"
+						)
+
+					}
+
+					resttage == 0L -> {
+
+						score += 60
+
+						gruende.add(
+							"${zutat.artikel.name} läuft heute ab"
+						)
+
+					}
+
+					resttage == 1L -> {
+
+						score += 50
+
+						gruende.add(
+							"${zutat.artikel.name} läuft morgen ab"
+						)
+
+					}
+
+					resttage == 2L -> {
+
+						score += 40
+
+						gruende.add(
+							"${zutat.artikel.name} läuft in 2 Tagen ab"
+						)
+
+					}
+
+					resttage in 3..5 -> {
+
+						score += 30
+
+						gruende.add(
+							"${zutat.artikel.name} läuft bald ab"
+						)
+
+					}
+
+					resttage in 6..7 -> {
+
+						score += 20
+
+					}
+
+				}
+
+			}
+
+		}
+
+		return RecipeRecommendation(
+
+			rezept = rezept,
+
+			score = score,
+
+			verwendeteArtikel = verwendeteArtikel,
+
+			fehlendeArtikel = fehlendeArtikel,
+
+			reason =
+				if (gruende.isNotEmpty()) {
+
+					gruende.joinToString(", ")
+
+				} else {
+
+					"Alle Zutaten sind vorhanden."
+
+				}
+
+		)
+
+	}
+
+	fun getRecipeRecommendations(): Flow<List<RecipeRecommendation>> {
+
+		return combine(
+
+			getAllRezepte(),
+
+			getAllVorratsArtikel()
+
+		) { rezepte, vorrat ->
+
+			rezepte
+				.map { rezept ->
+
+					calculateRecipeScore(
+						rezept = rezept,
+						vorrat = vorrat
+					)
+
+				}
+				.sortedByDescending {
+
+					it.score
+
+				}
+				.take(3)
+
+		}
+
 	}
 
 	suspend fun createShoppingListFromDay(

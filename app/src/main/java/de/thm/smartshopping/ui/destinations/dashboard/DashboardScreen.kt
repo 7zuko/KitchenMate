@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -100,12 +101,14 @@ fun DashboardScreen(
         }
     ) { padding ->
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-
+                .padding(padding),
+            contentPadding = PaddingValues(
+                horizontal = 20.dp,
+                vertical = 12.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
@@ -113,47 +116,55 @@ fun DashboardScreen(
                 .ofPattern("EEEE, dd. MMMM", Locale.GERMAN)
                 .format(java.time.LocalDate.now())
 
-            Text(
-                text = greeting(),
-                style = MaterialTheme.typography.headlineMedium
-            )
+            item {
 
-            Text(
-                text = currentDate.replaceFirstChar {
-                    it.uppercase()
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                Text(
+                    text = greeting(),
+                    style = MaterialTheme.typography.headlineMedium
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            }
 
-            HeuteCard(
-                mealPlans = todayMealPlans
-            )
+            item {
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = currentDate.replaceFirstChar {
+                        it.uppercase()
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+            }
+
+            item {
+                HeuteCard(
+                    mealPlans = todayMealPlans
+                )
+            }
 
             if (
                 baldAblaufendeArtikel.isNotEmpty() ||
                 abgelaufeneArtikel.isNotEmpty()
             ) {
 
-                MhdWarnCard(
+                item {
+                    MhdWarnCard(
 
-                    abgelaufeneArtikel = abgelaufeneArtikel,
+                        abgelaufeneArtikel = abgelaufeneArtikel,
 
-                    baldAblaufendeArtikel = baldAblaufendeArtikel,
+                        baldAblaufendeArtikel = baldAblaufendeArtikel,
 
-                    onClick = {
+                        onClick = {
 
-                        navController.navigate(
-                            NavDestination.Verwaltung.route
-                        )
+                            navController.navigate(
+                                NavDestination.Verwaltung.route
+                            )
 
-                    }
+                        }
 
-                )
+                    )
+                }
 
             }
 
@@ -189,53 +200,87 @@ fun DashboardScreen(
 
             )
 
-            LazyVerticalGrid(
+            item {
 
-                columns = GridCells.Fixed(2),
-
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-
-                contentPadding = PaddingValues(vertical = 12.dp)
-
-            ) {
-
-                items(dashboardItems) { item ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
 
                     DashboardCard(
-                        title = item.title,
-                        image = item.image,
-                        containerColor = item.color
+                        modifier = Modifier.weight(1f),
+                        title = "Artikel",
+                        image = R.drawable.dashboard_artikel,
+                        containerColor = Color(0xFFF1FAEE)
                     ) {
-
-                        navController.navigate(item.route) {
-
+                        navController.navigate(NavDestination.Verwaltung.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
                             }
                             launchSingleTop = true
                             restoreState = true
                         }
-
                     }
 
+                    DashboardCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Rezepte",
+                        image = R.drawable.dashboard_rezepte,
+                        containerColor = Color(0xFFFFF4E5)
+                    ) {
+                        navController.navigate(NavDestination.Rezepte.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 }
-
             }
 
-            Text(
-                text = "🍽 Heutiges Gericht",
-                style = MaterialTheme.typography.titleLarge
-            )
+            item {
 
-            Text(
-                text = "Noch kein Gericht geplant."
-            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+
+                    DashboardCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Speiseplan",
+                        image = R.drawable.dashboard_speiseplan,
+                        containerColor = Color(0xFFF6F0FF)
+                    ) {
+                        navController.navigate(NavDestination.Speiseplan.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+
+                    DashboardCard(
+                        modifier = Modifier.weight(1f),
+                        title = "Einkaufslisten",
+                        image = R.drawable.dashboard_einkaufslisten,
+                        containerColor = Color(0xFFEFF8FF)
+                    ) {
+                        navController.navigate(NavDestination.Einkaufslisten.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
     }
 }

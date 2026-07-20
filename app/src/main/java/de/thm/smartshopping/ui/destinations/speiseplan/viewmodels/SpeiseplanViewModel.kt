@@ -59,6 +59,24 @@ class SpeiseplanViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+
+            shoppingRepository
+                .getRecipeRecommendations()
+                .collect { recommendations ->
+
+                    _state.update {
+
+                        it.copy(
+                            recommendations = recommendations
+                        )
+
+                    }
+
+                }
+
+        }
     }
 
     fun onEvent(

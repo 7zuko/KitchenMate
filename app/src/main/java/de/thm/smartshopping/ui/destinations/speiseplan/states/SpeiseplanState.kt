@@ -2,6 +2,7 @@ package de.thm.smartshopping.ui.destinations.speiseplan.states
 
 import de.thm.smartshopping.data.Rezept
 import de.thm.smartshopping.data.MealPlan
+import de.thm.smartshopping.data.RecipeRecommendation
 import de.thm.smartshopping.ui.destinations.speiseplan.models.MealType
 
 data class SpeiseplanState(
@@ -14,5 +15,7 @@ data class SpeiseplanState(
 
     val showRecipeSheet: Boolean = false,
 
-    val selectedMeal: MealType? = null
+    val selectedMeal: MealType? = null,
+
+    val recommendations: List<RecipeRecommendation> = emptyList()
 )

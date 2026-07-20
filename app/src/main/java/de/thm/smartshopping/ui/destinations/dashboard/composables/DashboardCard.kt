@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DashboardCard(
+    modifier: Modifier = Modifier,
     title: String,
     @DrawableRes image: Int,
     containerColor: Color,
@@ -30,8 +31,7 @@ fun DashboardCard(
 
     Card(
 
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clickable { onClick() },
 
         shape = RoundedCornerShape(24.dp),
