@@ -1,7 +1,5 @@
-package de.thm.smartshopping
+package de.thm.smartshopping.ui.destinations.dashboard.viewmodels
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +9,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
 import javax.inject.Inject
 import java.util.Calendar
 
@@ -49,6 +46,24 @@ class DashboardViewModel @Inject constructor(
 	val todayMealPlans =
 		shoppingRepository
 			.getMealPlansFromDay(todayIndex)
+			.stateIn(
+				scope = viewModelScope,
+				started = SharingStarted.WhileSubscribed(5000),
+				initialValue = emptyList()
+			)
+
+	val baldAblaufendeArtikel =
+		shoppingRepository
+			.getBaldAblaufendeArtikel()
+			.stateIn(
+				scope = viewModelScope,
+				started = SharingStarted.WhileSubscribed(5000),
+				initialValue = emptyList()
+			)
+
+	val abgelaufeneArtikel =
+		shoppingRepository
+			.getAbgelaufeneArtikel()
 			.stateIn(
 				scope = viewModelScope,
 				started = SharingStarted.WhileSubscribed(5000),

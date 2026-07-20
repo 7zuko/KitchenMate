@@ -171,9 +171,11 @@ class ArtikelVerwaltungViewModel @Inject constructor(
 
 			is ArtikelVerwaltungEvent.SaveVorrat -> {
 				viewModelScope.launch {
+
 					shoppingRepository.setLagerbestand(
 						artikelId = event.artikel.id,
-						menge = event.menge
+						menge = event.menge,
+						mindesthaltbarBis = event.mindesthaltbarBis
 					)
 
 					_state.update {

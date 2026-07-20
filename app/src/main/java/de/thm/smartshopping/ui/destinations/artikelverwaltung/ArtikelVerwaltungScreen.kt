@@ -70,9 +70,17 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
 import de.thm.smartshopping.data.VorratsArtikel
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.composables.AddVorratSheet
 import de.thm.smartshopping.ui.destinations.artikelverwaltung.composables.EditVorratSheet
+import de.thm.smartshopping.utils.formatDate
+import de.thm.smartshopping.utils.tageBisAblauf
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -313,6 +321,7 @@ fun ArtikelVerwaltungScreen(
 										ArtikelZeile(
 											artikel = vorratsArtikel.artikel,
 											bestand = vorratsArtikel.menge,
+											mindesthaltbarBis = vorratsArtikel.mindesthaltbarBis,
 											onEvent = onEvent
 										)
 
@@ -336,6 +345,7 @@ fun ArtikelVerwaltungScreen(
 								ArtikelZeile(
 									artikel = vorratsArtikel.artikel,
 									bestand = vorratsArtikel.menge,
+									mindesthaltbarBis = vorratsArtikel.mindesthaltbarBis,
 									onEvent = onEvent
 								)
 
@@ -408,13 +418,22 @@ fun ArtikelVerwaltungScreen(
 
 			selectedArtikel = state.selectedArtikelForVorrat,
 
-			onSave = { artikel, menge ->
+			onSave = { artikel, menge, mindesthaltbarBis ->
+
 				onEvent(
+
 					ArtikelVerwaltungEvent.SaveVorrat(
-						artikel,
-						menge
+
+						artikel = artikel,
+
+						menge = menge,
+
+						mindesthaltbarBis = mindesthaltbarBis
+
 					)
+
 				)
+
 			},
 
 			onCreateArtikel = {
@@ -455,19 +474,22 @@ fun ArtikelVerwaltungScreen(
 
 			},
 
-			onSave = { neueMenge ->
+			onSave = { neueMenge, neuesMhd ->
 
 				onEvent(
 					ArtikelVerwaltungEvent.SaveVorrat(
 						artikel = state.artikelZumBearbeiten.artikel,
-						menge = neueMenge
+						menge = neueMenge,
+						mindesthaltbarBis = neuesMhd
 					)
 				)
 
 				onEvent(
 					ArtikelVerwaltungEvent.CloseEditVorratSheet
 				)
-			}
+			},
+
+			aktuellesMhd = state.artikelZumBearbeiten.mindesthaltbarBis,
 		)
 	}
 }
@@ -491,6 +513,7 @@ fun ArtikelVerwaltungScreenPreview() {
 fun ArtikelZeile(
 	artikel: Artikel,
 	bestand: Double?,
+	mindesthaltbarBis: Long?,
 	onEvent: (ArtikelVerwaltungEvent) -> Unit
 ) {
 	var expanded by remember {
@@ -517,13 +540,13 @@ fun ArtikelZeile(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(24.dp),
+				.padding(20.dp),
 			verticalAlignment = Alignment.Top
 		) {
 
 			Box(
 				modifier = Modifier
-					.size(72.dp)
+					.size(64.dp)
 					.background(
 						MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
 						CircleShape
@@ -532,7 +555,7 @@ fun ArtikelZeile(
 			) {
 				Text(
 					text = artikel.emoji,
-					fontSize = 38.sp
+					fontSize = 34.sp
 				)
 			}
 
@@ -612,83 +635,61 @@ fun ArtikelZeile(
 					color = MaterialTheme.colorScheme.outlineVariant
 				)
 
-				Spacer(Modifier.height(16.dp))
+				Spacer(Modifier.height(10.dp))
 
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					verticalAlignment = Alignment.CenterVertically,
-					horizontalArrangement = Arrangement.SpaceBetween
-				) {
+				Column {
 
 					Row(
-						verticalAlignment = Alignment.CenterVertically
+						modifier = Modifier.fillMaxWidth(),
+						horizontalArrangement = Arrangement.spacedBy(24.dp)
 					) {
 
-						Text(
-							text = "\uD83D\uDCE6",
-							fontSize = 20.sp
-						)
-
-						Spacer(Modifier.width(8.dp))
-
-						Column {
+						Column(
+							modifier = Modifier.weight(1f)
+						) {
 
 							Text(
-								text = "Bestand",
+								text = "📦 Bestand",
 								style = MaterialTheme.typography.labelSmall,
 								color = MaterialTheme.colorScheme.onSurfaceVariant
 							)
 
+							Spacer(Modifier.height(4.dp))
+
 							Text(
-								text = "${bestand ?: 0} ${artikel.einheit ?: ""}",
+								text = "${bestand ?: 0} ${artikel.einheit.orEmpty()}",
 								style = MaterialTheme.typography.titleMedium
 							)
+
 						}
-					}
 
-					ElevatedCard(
+						if (mindesthaltbarBis != null) {
 
-						modifier = Modifier.clickable {
+							val resttage = tageBisAblauf(mindesthaltbarBis)
 
-							onEvent(
-								ArtikelVerwaltungEvent.EditVorrat(
-									VorratsArtikel(
-										artikel = artikel,
-										menge = bestand ?: 0.0
-									)
+							Column(
+								horizontalAlignment = Alignment.End
+							) {
+
+								Text(
+									text = "📅 ${formatDate(mindesthaltbarBis)}",
+									style = MaterialTheme.typography.labelLarge,
+									color = MaterialTheme.colorScheme.onSurfaceVariant
 								)
-							)
 
-						},
+								Spacer(Modifier.height(8.dp))
 
-						shape = RoundedCornerShape(50.dp),
+								MhdChip(resttage)
 
-						colors = CardDefaults.elevatedCardColors(
-							containerColor = MaterialTheme.colorScheme.primaryContainer
-						),
+								Spacer(Modifier.height(10.dp))
 
-						elevation = CardDefaults.elevatedCardElevation(
-							defaultElevation = 0.dp
-						)
-
-					) {
-
-						Row(
-
-							modifier = Modifier.padding(
-								horizontal = 10.dp,
-								vertical = 5.dp
-							),
-
-							verticalAlignment = Alignment.CenterVertically
-
-						) {
-
-							Icon(
-								imageVector = Icons.Outlined.Edit,
-								contentDescription = null,
-								modifier = Modifier.size(18.dp)
-							)
+								EditVorratButton(
+									artikel = artikel,
+									bestand = bestand,
+									mindesthaltbarBis = mindesthaltbarBis,
+									onEvent = onEvent
+								)
+							}
 						}
 					}
 				}
@@ -710,6 +711,7 @@ fun ArtikelZeilePreview() {
 				emoji = "🥛"
 			),
 			bestand = 2.0,
+			mindesthaltbarBis = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(5),
 			onEvent = {}
 		)
 	}
@@ -827,5 +829,121 @@ private fun ColumnBezeichnungen() {
 fun ColumnBezeichnungenPreview() {
 	SmartShoppingTheme {
 		ColumnBezeichnungen()
+	}
+}
+
+@Composable
+private fun MhdChip(
+	resttage: Long
+) {
+
+	val (text, containerColor, contentColor) = when {
+
+		resttage < 0 -> Triple(
+			"🔴 Abgelaufen",
+			MaterialTheme.colorScheme.errorContainer,
+			MaterialTheme.colorScheme.error
+		)
+
+		resttage == 0L -> Triple(
+			"🟠 Heute",
+			Color(0xFFFFE0B2),
+			Color(0xFFE65100)
+		)
+
+		resttage == 1L -> Triple(
+			"🟠 Morgen",
+			Color(0xFFFFE0B2),
+			Color(0xFFE65100)
+		)
+
+		resttage <= 7 -> Triple(
+			"🟡 Noch $resttage Tage",
+			Color(0xFFFFF3CD),
+			Color(0xFF8A6D00)
+		)
+
+		else -> Triple(
+			"🟢 Noch $resttage Tage",
+			Color(0xFFDFF6DD),
+			Color(0xFF1B5E20)
+		)
+
+	}
+
+	Surface(
+		color = containerColor,
+		shape = RoundedCornerShape(50.dp)
+	) {
+
+		Text(
+			text = text,
+			color = contentColor,
+			modifier = Modifier.padding(
+				horizontal = 12.dp,
+				vertical = 6.dp
+			),
+			style = MaterialTheme.typography.labelMedium
+		)
+
+	}
+
+}
+
+@Composable
+private fun EditVorratButton(
+	artikel: Artikel,
+	bestand: Double?,
+	mindesthaltbarBis: Long?,
+	onEvent: (ArtikelVerwaltungEvent) -> Unit
+) {
+
+	ElevatedCard(
+		modifier = Modifier.clickable {
+
+			onEvent(
+				ArtikelVerwaltungEvent.EditVorrat(
+					VorratsArtikel(
+						artikel = artikel,
+						menge = bestand ?: 0.0,
+						mindesthaltbarBis = mindesthaltbarBis
+					)
+				)
+			)
+
+		},
+
+		shape = RoundedCornerShape(50.dp),
+
+		colors = CardDefaults.elevatedCardColors(
+			containerColor = MaterialTheme.colorScheme.primaryContainer
+		),
+
+		elevation = CardDefaults.elevatedCardElevation(
+			defaultElevation = 0.dp
+		)
+	) {
+
+		Row(
+			modifier = Modifier.padding(
+				horizontal = 14.dp,
+				vertical = 8.dp
+			),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+
+			Icon(
+				imageVector = Icons.Outlined.Edit,
+				contentDescription = null,
+				modifier = Modifier.size(18.dp)
+			)
+
+			Spacer(Modifier.width(6.dp))
+
+			Text(
+				text = "Bearbeiten",
+				style = MaterialTheme.typography.labelLarge
+			)
+		}
 	}
 }

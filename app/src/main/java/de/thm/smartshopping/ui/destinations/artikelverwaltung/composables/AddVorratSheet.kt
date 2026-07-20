@@ -24,6 +24,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.thm.smartshopping.ui.composables.CustomModalSheet
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.graphics.Color
 import de.thm.smartshopping.ui.theme.defaultOutlinedTextFieldColors
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +38,7 @@ fun AddVorratSheet(
     sheetState: SheetState,
     artikelListe: List<Artikel>,
     selectedArtikel: Artikel?,
-    onSave: (Artikel, Double) -> Unit,
+    onSave: (Artikel, Double, Long?) -> Unit,
     onCreateArtikel: () -> Unit,
     onDismiss: () -> Unit
 ){
@@ -43,6 +49,16 @@ fun AddVorratSheet(
     var mengeText by remember {
         mutableStateOf("")
     }
+
+    var mindesthaltbarBis by remember {
+        mutableStateOf<Long?>(null)
+    }
+
+    var showDatePicker by remember {
+        mutableStateOf(false)
+    }
+
+    val datePickerState = rememberDatePickerState()
 
     var currentSelectedArtikel by remember {
         mutableStateOf<Artikel?>(selectedArtikel)
@@ -84,7 +100,8 @@ fun AddVorratSheet(
 
             onSave(
                 currentSelectedArtikel!!,
-                mengeText.toDouble()
+                mengeText.toDouble(),
+                mindesthaltbarBis
             )
 
         },
@@ -191,6 +208,26 @@ fun AddVorratSheet(
         )
 
         Spacer(
+            modifier = Modifier.height(16.dp)
+        )
+
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                showDatePicker = true
+            }
+        ) {
+
+            Text(
+                if (mindesthaltbarBis == null)
+                    "📅 Mindesthaltbarkeitsdatum auswählen"
+                else
+                    "📅 ${formatDate(mindesthaltbarBis!!)}"
+            )
+
+        }
+
+        Spacer(
             modifier = Modifier.height(12.dp)
         )
 
@@ -206,4 +243,84 @@ fun AddVorratSheet(
 
         }
     }
+
+    if (showDatePicker) {
+
+        DatePickerDialog(
+
+            onDismissRequest = {
+                showDatePicker = false
+            },
+
+            colors = DatePickerDefaults.colors(
+
+                containerColor = Color.White
+
+            ),
+
+            confirmButton = {
+
+                TextButton(
+
+                    onClick = {
+
+                        mindesthaltbarBis =
+                            datePickerState.selectedDateMillis
+
+                        showDatePicker = false
+
+                    }
+
+                ) {
+
+                    Text("OK")
+
+                }
+
+            },
+
+            dismissButton = {
+
+                TextButton(
+
+                    onClick = {
+
+                        showDatePicker = false
+
+                    }
+
+                ) {
+
+                    Text("Abbrechen")
+
+                }
+
+            }
+
+        ) {
+
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+
+                    containerColor = MaterialTheme.colorScheme.surface
+
+                )
+            )
+
+        }
+
+    }
+}
+
+private fun formatDate(time: Long): String {
+
+    val formatter =
+        java.text.SimpleDateFormat(
+            "dd.MM.yyyy",
+            java.util.Locale.getDefault()
+        )
+
+    return formatter.format(java.util.Date(time))
+
 }

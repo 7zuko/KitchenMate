@@ -1,4 +1,4 @@
-package de.thm.smartshopping.ui.destinations.dashboard
+package de.thm.smartshopping.ui.destinations.dashboard.composables
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource

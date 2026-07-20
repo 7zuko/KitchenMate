@@ -9,6 +9,8 @@ data class LagerbestandEntity(
     @PrimaryKey
     val artikelId: String,
 
-    val menge: Double
+    val menge: Double,
+
+    val mindesthaltbarBis: Long? = null
 
 )

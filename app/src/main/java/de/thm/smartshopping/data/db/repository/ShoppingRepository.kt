@@ -37,6 +37,7 @@ import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import java.util.concurrent.TimeUnit
 
 class ShoppingRepository(
 	private val einkaufslisteDao: EinkaufslisteDao,
@@ -320,13 +321,15 @@ class ShoppingRepository(
 
 	suspend fun setLagerbestand(
 		artikelId: String,
-		menge: Double
+		menge: Double,
+		mindesthaltbarBis: Long? = null
 	) {
 
 		lagerbestandDao.upsertLagerbestand(
 			LagerbestandEntity(
 				artikelId = artikelId,
-				menge = menge
+				menge = menge,
+				mindesthaltbarBis = mindesthaltbarBis
 			)
 		)
 
@@ -334,7 +337,8 @@ class ShoppingRepository(
 
 	suspend fun addArtikelToVorrat(
 		artikel: Artikel,
-		menge: Double
+		menge: Double,
+		mindesthaltbarBis: Long? = null
 	) {
 
 		val vorhandenerBestand =
@@ -346,7 +350,8 @@ class ShoppingRepository(
 
 		setLagerbestand(
 			artikelId = artikel.id,
-			menge = neueMenge
+			menge = neueMenge,
+			mindesthaltbarBis = mindesthaltbarBis
 		)
 	}
 
@@ -405,7 +410,8 @@ class ShoppingRepository(
 										flowOf(
 											VorratsArtikel(
 												artikel = artikelEntity.toDomain(null),
-												menge = lagerbestand.menge
+												menge = lagerbestand.menge,
+												mindesthaltbarBis = lagerbestand.mindesthaltbarBis
 											)
 										)
 
@@ -417,7 +423,8 @@ class ShoppingRepository(
 
 											VorratsArtikel(
 												artikel = artikelEntity.toDomain(kategorie),
-												menge = lagerbestand.menge
+												menge = lagerbestand.menge,
+												mindesthaltbarBis = lagerbestand.mindesthaltbarBis
 											)
 
 										}
@@ -439,6 +446,67 @@ class ShoppingRepository(
 				}
 
 			}
+
+	}
+
+	fun getBaldAblaufendeArtikel(
+		tage: Long = 7
+	): Flow<List<VorratsArtikel>> {
+
+		val heute = System.currentTimeMillis()
+
+		return getAllVorratsArtikel().map { artikelListe ->
+
+			artikelListe
+				.filter { artikel ->
+
+					val mhd = artikel.mindesthaltbarBis
+						?: return@filter false
+
+					val resttage = TimeUnit.MILLISECONDS.toDays(
+						mhd - heute
+					)
+
+					resttage in 0..tage
+
+				}
+				.sortedBy {
+
+					it.mindesthaltbarBis
+
+				}
+
+		}
+
+	}
+
+	fun getAbgelaufeneArtikel(): Flow<List<VorratsArtikel>> {
+
+		val heute = System.currentTimeMillis()
+
+		return getAllVorratsArtikel().map { artikelListe ->
+
+			artikelListe
+				.filter { artikel ->
+
+					val mhd = artikel.mindesthaltbarBis
+						?: return@filter false
+
+					val resttage =
+						TimeUnit.MILLISECONDS.toDays(
+							mhd - heute
+						)
+
+					resttage < 0
+
+				}
+				.sortedBy {
+
+					it.mindesthaltbarBis
+
+				}
+
+		}
 
 	}
 // Rezepte

@@ -22,12 +22,10 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -81,8 +79,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
 import de.thm.smartshopping.ui.destinations.rezepte.viewmodels.RezepteViewModel
-import androidx.compose.runtime.remember
 import de.thm.smartshopping.ui.destinations.dashboard.DashboardScreen
+import de.thm.smartshopping.ui.destinations.dashboard.viewmodels.DashboardViewModel
 import de.thm.smartshopping.ui.destinations.speiseplan.SpeiseplanScreen
 
 @AndroidEntryPoint

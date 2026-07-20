@@ -38,7 +38,8 @@ sealed interface ArtikelVerwaltungEvent {
 
 	data class SaveVorrat(
 		val artikel: Artikel,
-		val menge: Double
+		val menge: Double,
+		val mindesthaltbarBis: Long?
 	) : ArtikelVerwaltungEvent
 
 	data class SelectArtikelForVorrat(
