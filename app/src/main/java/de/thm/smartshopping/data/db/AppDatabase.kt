@@ -38,7 +38,7 @@ import java.util.UUID
 		LagerbestandEntity::class,
 		MealPlanEntity::class
 	],
-	version = 8,
+	version = 9,
 	exportSchema = true
 )
 @TypeConverters(
@@ -95,6 +95,26 @@ abstract class AppDatabase: RoomDatabase() {
 			val einkaufslisteDao = database.einkaufslisteDao()
 			val lagerbestandDao = database.lagerbestandDao()
 			val rezeptDao = database.rezeptDao()
+			val oneDay = 24 * 60 * 60 * 1000L
+			val now = System.currentTimeMillis()
+
+			val heute = now
+			val morgen = now + oneDay
+			val in3Tagen = now + (3 * oneDay)
+			val in4Tagen = now + (4 * oneDay)
+			val in5Tagen = now + (5 * oneDay)
+			val in6Tagen = now + (6 * oneDay)
+			val in7Tagen = now + (7 * oneDay)
+			val in8Tagen = now + (8 * oneDay)
+			val in12Tagen = now + (12 * oneDay)
+			val in15Tagen = now + (15 * oneDay)
+			val in20Tagen = now + (20 * oneDay)
+			val in25Tagen = now + (25 * oneDay)
+			val in30Tagen = now + (30 * oneDay)
+			val in8Monaten = now + (240 * oneDay)
+			val in10Monaten = now + (300 * oneDay)
+			val in18Monaten = now + (540 * oneDay)
+			val in1Jahr = now + (365 * oneDay)
 
 			Log.d("AppDatabaseCallback", "Starting data population within populateDatabase...")
 
@@ -168,25 +188,134 @@ abstract class AppDatabase: RoomDatabase() {
 			// Tierbedarf
 			val artikelIdKatzenfutter = UUID.randomUUID().toString()
 
+			val artikelIdSpaghetti = UUID.randomUUID().toString()
+			val artikelIdPassierteTomaten = UUID.randomUUID().toString()
+			val artikelIdOlivenoel = UUID.randomUUID().toString()
+			val artikelIdButter = UUID.randomUUID().toString()
+			val artikelIdParmesan = UUID.randomUUID().toString()
+			val artikelIdMozzarella = UUID.randomUUID().toString()
+			val artikelIdMehl = UUID.randomUUID().toString()
+			val artikelIdKidneybohnen = UUID.randomUUID().toString()
+			val artikelIdSalat = UUID.randomUUID().toString()
+			val artikelIdKarotten = UUID.randomUUID().toString()
+			val artikelIdBrokkoli = UUID.randomUUID().toString()
+			val artikelIdKnoblauch = UUID.randomUUID().toString()
+			val artikelIdErdbeeren = UUID.randomUUID().toString()
+			val artikelIdZitronen = UUID.randomUUID().toString()
+			val artikelIdMuellbeutel = UUID.randomUUID().toString()
+
 
 			val articles = listOf(
 				ArtikelEntity(id = artikelIdApfel, name = "Äpfel", einheit = "Stk", kategorieId = katIdObst, emoji = "\uD83C\uDF4E"),
 				ArtikelEntity(id = artikelIdBanane, name = "Bananen", einheit = "Stk", kategorieId = katIdObst, emoji = "\uD83C\uDF4C"),
 				ArtikelEntity(id = artikelIdOrangen, name = "Orangen", einheit = "Stk", kategorieId= katIdObst, emoji = "\uD83C\uDF4A"),
+				ArtikelEntity(
+					id = artikelIdErdbeeren,
+					name = "Erdbeeren",
+					einheit = "Gramm",
+					kategorieId = katIdObst,
+					emoji = "🍓"
+				),
+
+				ArtikelEntity(
+					id = artikelIdZitronen,
+					name = "Zitronen",
+					einheit = "Stk",
+					kategorieId = katIdObst,
+					emoji = "🍋"
+				),
 
 				ArtikelEntity(id = artikelIdTomate, name = "Tomaten", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83C\uDF45"),
 				ArtikelEntity(id = artikelIdGurke, name = "Gurken", einheit = "Stk", kategorieId = katIdGemuese, emoji = "\uD83E\uDD52"),
 				ArtikelEntity(id = artikelIdPaprika, name = "Paprika", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83E\uDED1"),
-				ArtikelEntity(id = artikelIdZwiebel, name = "Zwiebelen", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83E\uDDC5"),
+				ArtikelEntity(id = artikelIdZwiebel, name = "Zwiebeln", einheit = "Gramm", kategorieId = katIdGemuese, emoji = "\uD83E\uDDC5"),
+				ArtikelEntity(
+					id = artikelIdPassierteTomaten,
+					name = "Passierte Tomaten",
+					einheit = "Gramm",
+					kategorieId = katIdGemuese,
+					emoji = "🥫"
+				),
+
+				ArtikelEntity(
+					id = artikelIdKarotten,
+					name = "Karotten",
+					einheit = "Gramm",
+					kategorieId = katIdGemuese,
+					emoji = "🥕"
+				),
+
+				ArtikelEntity(
+					id = artikelIdBrokkoli,
+					name = "Brokkoli",
+					einheit = "Gramm",
+					kategorieId = katIdGemuese,
+					emoji = "🥦"
+				),
+
+				ArtikelEntity(
+					id = artikelIdSalat,
+					name = "Salat",
+					einheit = "Stk",
+					kategorieId = katIdGemuese,
+					emoji = "🥬"
+				),
+
+				ArtikelEntity(
+					id = artikelIdKnoblauch,
+					name = "Knoblauch",
+					einheit = "Zehen",
+					kategorieId = katIdGemuese,
+					emoji = "🧄"
+				),
 
 				ArtikelEntity(id = artikelIdMilch, name = "Vollmilch (3.5%)", einheit = "Liter", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5B"),
 				ArtikelEntity(id = artikelIdJoghurt, name = "Joghurt (1.5%)", einheit = "Gramm", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5B"),
 				ArtikelEntity(id = artikelIdEier, name = "Eier (Größe S, Bio)", einheit = "Stk", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDD5A"),
 				ArtikelEntity(id = artikelIdKaese, name = "Gouda", einheit = "Gramm", kategorieId = katIdMilchprodukte, emoji = "\uD83E\uDDC0"),
+				ArtikelEntity(
+					id = artikelIdButter,
+					name = "Butter",
+					einheit = "Gramm",
+					kategorieId = katIdMilchprodukte,
+					emoji = "🧈"
+				),
+
+				ArtikelEntity(
+					id = artikelIdParmesan,
+					name = "Parmesan",
+					einheit = "Gramm",
+					kategorieId = katIdMilchprodukte,
+					emoji = "🧀"
+				),
+
+				ArtikelEntity(
+					id = artikelIdMozzarella,
+					name = "Mozzarella",
+					einheit = "Stk",
+					kategorieId = katIdMilchprodukte,
+					emoji = "🧀"
+				),
+
 
 				ArtikelEntity(id = artikelIdBrot, name = "Brot", einheit = "Gramm", kategorieId = katIdBackwaren, emoji = "\uD83E\uDD56"),
 				ArtikelEntity(id = artikelIdBroetchen, name = "Aufbackbrötchen", einheit = "Stk", kategorieId = katIdBackwaren, emoji = "\uD83E\uDD56"),
 				ArtikelEntity(id = artikelIdToast, name = "Vollkorntoast", einheit = "Gramm", kategorieId = katIdBackwaren, emoji = "\uD83C\uDF5E"),
+				ArtikelEntity(
+					id = artikelIdSpaghetti,
+					name = "Spaghetti",
+					einheit = "Gramm",
+					kategorieId = katIdBackwaren,
+					emoji = "🍝"
+				),
+
+				ArtikelEntity(
+					id = artikelIdMehl,
+					name = "Mehl",
+					einheit = "Gramm",
+					kategorieId = katIdBackwaren,
+					emoji = "🌾"
+				),
 
 				ArtikelEntity(id = artikelIdHackfleisch, name = "Hackfleisch", einheit = "Gramm", kategorieId = katIdFleisch, emoji = "\uD83E\uDD69"),
 				ArtikelEntity(id = artikelIdHaehnchen, name = "Hähnchenbrustfilet (Bio)", einheit = "Gramm", kategorieId = katIdFleisch, emoji = "\uD83C\uDF57"),
@@ -204,9 +333,30 @@ abstract class AppDatabase: RoomDatabase() {
 				ArtikelEntity(id = artikelIdWaschmittel, name = "Waschmittel", einheit = "", kategorieId = katIdHaushalt, emoji = "\uD83D\uDC5A"),
 				ArtikelEntity(id = artikelIdKlopapier, name = "Toilettenpapier", einheit = "Rollen", kategorieId = katIdHaushalt, emoji = "\uD83E\uDDFB"),
 				ArtikelEntity(id = artikelIdSpuelmittel, name = "Spülmittel", einheit = "ml", kategorieId = katIdHaushalt, emoji = "\uD83C\uDF7D\uFE0F"),
+				ArtikelEntity(
+					id = artikelIdMuellbeutel,
+					name = "Müllbeutel",
+					einheit = "Stk",
+					kategorieId = katIdHaushalt,
+					emoji = "🗑️"
+				),
 
 				ArtikelEntity(id = artikelIdMais, name = "Mais", einheit = "Gramm", kategorieId = katIdKonserven, emoji = "\uD83E\uDD6B"),
 				ArtikelEntity(id = artikelIdThunfisch, name = "Thunfisch", einheit = "Gramm", kategorieId = katIdKonserven, emoji = "\uD83E\uDD6B"),
+				ArtikelEntity(
+					id = artikelIdKidneybohnen,
+					name = "Kidneybohnen",
+					einheit = "Gramm",
+					kategorieId = katIdKonserven,
+					emoji = "🫘"
+				),
+				ArtikelEntity(
+					id = artikelIdOlivenoel,
+					name = "Olivenöl",
+					einheit = "ml",
+					kategorieId = katIdHaushalt,
+					emoji = "🫒"
+				),
 
 				ArtikelEntity(id = artikelIdKatzenfutter, name = "Katzenfutter", einheit = "Gramm", kategorieId = katIdTierbedarf, emoji = "\uD83D\uDE3C")
 			)
@@ -216,10 +366,13 @@ abstract class AppDatabase: RoomDatabase() {
 
 			// --- Sample Rezepte ---
 			val rezeptIdSpaghetti = UUID.randomUUID().toString()
-			val rezeptIdBurger = UUID.randomUUID().toString()
+			val rezeptIdChili = UUID.randomUUID().toString()
+			val rezeptIdCaprese = UUID.randomUUID().toString()
 			val rezeptIdPancakes = UUID.randomUUID().toString()
 			val rezeptIdRuehrei = UUID.randomUUID().toString()
-			val rezeptIdSalat = UUID.randomUUID().toString()
+			val rezeptIdCaesar = UUID.randomUUID().toString()
+			val rezeptIdCurry = UUID.randomUUID().toString()
+			val rezeptIdKuchen = UUID.randomUUID().toString()
 
 
 
@@ -228,107 +381,306 @@ abstract class AppDatabase: RoomDatabase() {
 			val currentTimeMillis = System.currentTimeMillis()
 			val userDemoId = "demoUser123" // Example User ID
 
-			val listeIdWocheneinkauf = UUID.randomUUID().toString()
-			val listeIdWochenende = UUID.randomUUID().toString()
-			val listeIdParty = UUID.randomUUID().toString()
-			val listeIdSchnell = UUID.randomUUID().toString() // An already completed list
+			val listeIdMonat = UUID.randomUUID().toString()
+			val listeIdGrill = UUID.randomUUID().toString()
+			val listeIdTier = UUID.randomUUID().toString()
+			val listeIdFruehstueck = UUID.randomUUID().toString()
 
 			// Inserting EinkaufslisteEntity one by one as per your DAO
-			val einkaufslisteWochen = EinkaufslisteEntity(
-				id = listeIdWocheneinkauf, name = "Wocheneinkauf KW 23",
-				erstellDatumMillis = currentTimeMillis - (5 * 24 * 60 * 60 * 1000), // 5 days ago
-				bearbeitetAmMillis = currentTimeMillis - (1 * 24 * 60 * 60 * 1000), // 1 day ago
+			val einkaufslisteMonat = EinkaufslisteEntity(
+				id = listeIdMonat,
+				name = "Monatseinkauf",
+				erstellDatumMillis = currentTimeMillis,
+				bearbeitetAmMillis = currentTimeMillis,
 				erstellerId = userDemoId
 			)
-			val einkaufslisteWE = EinkaufslisteEntity(
-				id = listeIdWochenende, name = "Einkauf Wochenende",
-				erstellDatumMillis = currentTimeMillis - (2 * 24 * 60 * 60 * 1000), // 2 days ago
-				bearbeitetAmMillis = currentTimeMillis, // Just now
+
+			val einkaufslisteGrill = EinkaufslisteEntity(
+				id = listeIdGrill,
+				name = "Grillabend",
+				erstellDatumMillis = currentTimeMillis,
+				bearbeitetAmMillis = currentTimeMillis,
 				erstellerId = userDemoId
 			)
-			val einkaufslisteParty = EinkaufslisteEntity(
-				id = listeIdParty, name = "Grillparty Vorbereitung",
-				erstellDatumMillis = currentTimeMillis - (10 * 24 * 60 * 60 * 1000), // 10 days ago
-				bearbeitetAmMillis = currentTimeMillis - (3 * 24 * 60 * 60 * 1000), // 3 days ago
+
+			val einkaufslisteTier = EinkaufslisteEntity(
+				id = listeIdTier,
+				name = "Tierbedarf",
+				erstellDatumMillis = currentTimeMillis,
+				bearbeitetAmMillis = currentTimeMillis,
 				erstellerId = userDemoId
 			)
-			val einkaufslisteSchnell = EinkaufslisteEntity(
-				id = listeIdSchnell, name = "Schnell was holen (Erledigt)",
-				erstellDatumMillis = currentTimeMillis - (1 * 24 * 60 * 60 * 1000), // 1 day ago
-				bearbeitetAmMillis = currentTimeMillis - (23 * 60 * 60 * 1000),   // 23 hours ago
-				erledigtAmMillis = currentTimeMillis - (22 * 60 * 60 * 1000),    // Marked done 22 hours ago
+
+			val einkaufslisteFruehstueck = EinkaufslisteEntity(
+				id = listeIdFruehstueck,
+				name = "Frühstück",
+				erstellDatumMillis = currentTimeMillis,
+				bearbeitetAmMillis = currentTimeMillis,
 				erstellerId = userDemoId
 			)
-			einkaufslisteDao.insertEinkaufsliste(einkaufslisteWochen)
-			einkaufslisteDao.insertEinkaufsliste(einkaufslisteWE)
-			einkaufslisteDao.insertEinkaufsliste(einkaufslisteParty)
-			einkaufslisteDao.insertEinkaufsliste(einkaufslisteSchnell)
+
+			einkaufslisteDao.insertEinkaufsliste(einkaufslisteMonat)
+			einkaufslisteDao.insertEinkaufsliste(einkaufslisteGrill)
+			einkaufslisteDao.insertEinkaufsliste(einkaufslisteTier)
+			einkaufslisteDao.insertEinkaufsliste(einkaufslisteFruehstueck)
 			Log.d("AppDatabaseCallback", "4 shopping lists inserted individually.")
 
 			// --- Add Articles to Shopping Lists (Many-to-Many using CrossRef) ---
 			val listArtikelCrossRefs = listOf(
 				// Wocheneinkauf KW 23
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdMilch, menge = 2.0, notiz = "Haltbare nehmen", erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdBrot, menge = 1.0, erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdEier, menge = 1.0, erledigt = true, notiz = "10er Pack war leer"), // 1x 6er Pack
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdApfel, menge = 5.0, erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdKaese, menge = 1.0, erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdWaschmittel, menge = 1.0, erledigt = true),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWocheneinkauf, artikelId = artikelIdPaprika, menge = 1.0, erledigt = false), // 1x 500g Netz
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdMonat,
+					artikelId = artikelIdMilch,
+					menge = 2.0,
+					erledigt = false
+				),
 
-				// Einkauf Wochenende
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWochenende, artikelId = artikelIdBroetchen, menge = 1.0, notiz = "Frische vom Bäcker", erledigt = false), // 1x 6er Pack
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWochenende, artikelId = artikelIdOrangensaft, menge = 1.0, erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWochenende, artikelId = artikelIdWurst, menge = 1.0, erledigt = false), // 1x 250g
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdWochenende, artikelId = artikelIdSchokolade, menge = 2.0, notiz = "Eine für mich!", erledigt = false),
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdMonat,
+					artikelId = artikelIdButter,
+					menge = 1.0,
+					erledigt = false
+				),
 
-				// Grillparty Vorbereitung
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdHackfleisch, menge = 2000.0, notiz = "Für Burger & Frikadellen", erledigt = false), // 2kg
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdHaehnchen, menge = 1200.0, notiz = "Für Spieße", erledigt = false), // 1.2kg
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdWasser, menge = 24.0, erledigt = false), // 24 Flaschen (e.g. 2x 12er Kasten)
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdCola, menge = 6.0, erledigt = false), // 6x 1L
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdChips, menge = 5.0, erledigt = false),
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdParty, artikelId = artikelIdToast, menge = 2.0, notiz = "Für Kräuterbutter", erledigt = true), // 2x 500g
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdMonat,
+					artikelId = artikelIdBrot,
+					menge = 1.0,
+					erledigt = true
+				),
 
-				// Schnell was holen (Erledigt)
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdSchnell, artikelId = artikelIdKlopapier, menge = 1.0, erledigt = true), // 1x 8 Rollen
-				EinkaufsArtikelCrossRef(einkaufslisteId = listeIdSchnell, artikelId = artikelIdSpuelmittel, menge = 1.0, erledigt = true)
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdGrill,
+					artikelId = artikelIdHackfleisch,
+					menge = 2000.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdGrill,
+					artikelId = artikelIdHaehnchen,
+					menge = 1000.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdGrill,
+					artikelId = artikelIdCola,
+					menge = 6.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdGrill,
+					artikelId = artikelIdChips,
+					menge = 4.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdTier,
+					artikelId = artikelIdKatzenfutter,
+					menge = 1500.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdFruehstueck,
+					artikelId = artikelIdBroetchen,
+					menge = 6.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdFruehstueck,
+					artikelId = artikelIdOrangensaft,
+					menge = 1.0,
+					erledigt = false
+				),
+
+				EinkaufsArtikelCrossRef(
+					einkaufslisteId = listeIdFruehstueck,
+					artikelId = artikelIdEier,
+					menge = 10.0,
+					erledigt = false
+				),
 			)
 			einkaufslisteDao.insertAllEinkaufsArtikel(listArtikelCrossRefs)
 			Log.d("AppDatabaseCallback", "${listArtikelCrossRefs.size} list-article associations inserted.")
 
 			val lagerbestand = listOf(
 
+				// ---------- Gemüse ----------
+
 				LagerbestandEntity(
-					artikelId = artikelIdMilch,
-					menge = 2.0
+					artikelId = artikelIdPassierteTomaten,
+					menge = 2.0,
+					mindesthaltbarBis = morgen
 				),
 
 				LagerbestandEntity(
-					artikelId = artikelIdKaese,
-					menge = 500.0
+					artikelId = artikelIdTomate,
+					menge = 600.0,
+					mindesthaltbarBis = in4Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdZwiebel,
+					menge = 4.0,
+					mindesthaltbarBis = in25Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdKnoblauch,
+					menge = 5.0,
+					mindesthaltbarBis = in20Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdPaprika,
+					menge = 400.0,
+					mindesthaltbarBis = in6Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdGurke,
+					menge = 2.0,
+					mindesthaltbarBis = in6Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdKarotten,
+					menge = 800.0,
+					mindesthaltbarBis = in8Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdBrokkoli,
+					menge = 500.0,
+					mindesthaltbarBis = in5Tagen
+				),
+
+				// ---------- Milchprodukte ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdMilch,
+					menge = 2.0,
+					mindesthaltbarBis = in5Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdButter,
+					menge = 250.0,
+					mindesthaltbarBis = in12Tagen
 				),
 
 				LagerbestandEntity(
 					artikelId = artikelIdEier,
-					menge = 10.0
+					menge = 10.0,
+					mindesthaltbarBis = in7Tagen
 				),
 
 				LagerbestandEntity(
-					artikelId = artikelIdApfel,
-					menge = 6.0
+					artikelId = artikelIdMozzarella,
+					menge = 2.0,
+					mindesthaltbarBis = heute
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdParmesan,
+					menge = 250.0,
+					mindesthaltbarBis = in30Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdKaese,
+					menge = 500.0,
+					mindesthaltbarBis = in15Tagen
+				),
+
+				// ---------- Backwaren ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdSpaghetti,
+					menge = 500.0,
+					mindesthaltbarBis = in1Jahr
 				),
 
 				LagerbestandEntity(
 					artikelId = artikelIdBrot,
-					menge = 750.0
+					menge = 700.0,
+					mindesthaltbarBis = in5Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdToast,
+					menge = 500.0,
+					mindesthaltbarBis = in8Tagen
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdMehl,
+					menge = 1000.0,
+					mindesthaltbarBis = in1Jahr
+				),
+
+				// ---------- Fleisch ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdHaehnchen,
+					menge = 600.0,
+					mindesthaltbarBis = in3Tagen
+				),
+
+				// Kein Hackfleisch!
+
+				// ---------- Konserven ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdMais,
+					menge = 300.0,
+					mindesthaltbarBis = in1Jahr
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdKidneybohnen,
+					menge = 500.0,
+					mindesthaltbarBis = in1Jahr
+				),
+
+				LagerbestandEntity(
+					artikelId = artikelIdThunfisch,
+					menge = 300.0,
+					mindesthaltbarBis = in1Jahr
+				),
+
+				// ---------- Getränke ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdWasser,
+					menge = 12.0,
+					mindesthaltbarBis = null
 				),
 
 				LagerbestandEntity(
 					artikelId = artikelIdCola,
-					menge = 3.0
-				)
+					menge = 3.0,
+					mindesthaltbarBis = in8Monaten
+				),
 
+				LagerbestandEntity(
+					artikelId = artikelIdKaffee,
+					menge = 1000.0,
+					mindesthaltbarBis = in10Monaten
+				),
+
+				// ---------- Sonstiges ----------
+
+				LagerbestandEntity(
+					artikelId = artikelIdOlivenoel,
+					menge = 750.0,
+					mindesthaltbarBis = in18Monaten
+				)
 			)
 
 			lagerbestand.forEach {
@@ -352,53 +704,85 @@ abstract class AppDatabase: RoomDatabase() {
 					portionen = 4,
 					schwierigkeit = "Einfach",
 					kategorie = "Hauptgericht",
-					bildPfad = null
+					bildPfad = "spaghetti.jpg"
 				),
 
 				RezeptEntity(
-					id = rezeptIdBurger,
-					name = "Cheeseburger",
-					beschreibung = "Saftiger Burger mit Käse.",
-					zubereitungszeit = 25,
+					id = rezeptIdChili,
+					name = "Chili con Carne",
+					beschreibung = "Würziges Chili mit Mais und Kidneybohnen.",
+					zubereitungszeit = 40,
+					portionen = 4,
+					schwierigkeit = "Einfach",
+					kategorie = "Hauptgericht",
+					bildPfad = "chili.jpg"
+				),
+
+				RezeptEntity(
+					id = rezeptIdCaprese,
+					name = "Caprese",
+					beschreibung = "Tomate mit Mozzarella und Olivenöl.",
+					zubereitungszeit = 10,
 					portionen = 2,
 					schwierigkeit = "Einfach",
-					kategorie = "Fast Food",
-					bildPfad = null
+					kategorie = "Salat",
+					bildPfad = "caprese.jpg"
 				),
 
 				RezeptEntity(
 					id = rezeptIdPancakes,
 					name = "Pancakes",
-					beschreibung = "Perfekt zum Frühstück.",
+					beschreibung = "Locker und fluffig.",
 					zubereitungszeit = 20,
 					portionen = 2,
 					schwierigkeit = "Einfach",
 					kategorie = "Frühstück",
-					bildPfad = null
+					bildPfad = "pancakes.jpg"
 				),
 
 				RezeptEntity(
 					id = rezeptIdRuehrei,
 					name = "Rührei",
-					beschreibung = "Schnelles Frühstück.",
+					beschreibung = "Perfekt zum Frühstück.",
 					zubereitungszeit = 10,
 					portionen = 1,
 					schwierigkeit = "Einfach",
 					kategorie = "Frühstück",
-					bildPfad = null
+					bildPfad = "ruehrei.jpg"
 				),
 
 				RezeptEntity(
-					id = rezeptIdSalat,
-					name = "Gemischter Salat",
-					beschreibung = "Frischer Salat.",
-					zubereitungszeit = 15,
+					id = rezeptIdCaesar,
+					name = "Caesar Salad",
+					beschreibung = "Frischer Salat mit Hähnchen.",
+					zubereitungszeit = 20,
 					portionen = 2,
 					schwierigkeit = "Einfach",
 					kategorie = "Salat",
-					bildPfad = null
-				)
+					bildPfad = "caesar.jpg"
+				),
 
+				RezeptEntity(
+					id = rezeptIdCurry,
+					name = "Hähnchen Curry",
+					beschreibung = "Leckeres Curry mit Gemüse.",
+					zubereitungszeit = 35,
+					portionen = 4,
+					schwierigkeit = "Mittel",
+					kategorie = "Hauptgericht",
+					bildPfad = "curry.jpg"
+				),
+
+				RezeptEntity(
+					id = rezeptIdKuchen,
+					name = "Schokokuchen",
+					beschreibung = "Saftiger Schokokuchen.",
+					zubereitungszeit = 60,
+					portionen = 8,
+					schwierigkeit = "Einfach",
+					kategorie = "Dessert",
+					bildPfad = "schokokuchen.jpg"
+				)
 			)
 
 			demoRezepte.forEach {
@@ -413,13 +797,19 @@ abstract class AppDatabase: RoomDatabase() {
 
 				RezeptZutatEntity(
 					rezeptId = rezeptIdSpaghetti,
+					artikelId = artikelIdSpaghetti,
+					menge = 500.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSpaghetti,
 					artikelId = artikelIdHackfleisch,
 					menge = 500.0
 				),
 
 				RezeptZutatEntity(
 					rezeptId = rezeptIdSpaghetti,
-					artikelId = artikelIdTomate,
+					artikelId = artikelIdPassierteTomaten,
 					menge = 400.0
 				),
 
@@ -429,24 +819,62 @@ abstract class AppDatabase: RoomDatabase() {
 					menge = 1.0
 				),
 
-				// ---------- Burger ----------
+				RezeptZutatEntity(
+					rezeptId = rezeptIdSpaghetti,
+					artikelId = artikelIdOlivenoel,
+					menge = 20.0
+				),
+
+				// ---------- Chili ----------
 
 				RezeptZutatEntity(
-					rezeptId = rezeptIdBurger,
+					rezeptId = rezeptIdChili,
 					artikelId = artikelIdHackfleisch,
 					menge = 300.0
 				),
 
 				RezeptZutatEntity(
-					rezeptId = rezeptIdBurger,
-					artikelId = artikelIdKaese,
-					menge = 150.0
+					rezeptId = rezeptIdChili,
+					artikelId = artikelIdMais,
+					menge = 200.0
 				),
 
 				RezeptZutatEntity(
-					rezeptId = rezeptIdBurger,
-					artikelId = artikelIdBrot,
+					rezeptId = rezeptIdChili,
+					artikelId = artikelIdKidneybohnen,
+					menge = 250.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdChili,
+					artikelId = artikelIdZwiebel,
+					menge = 1.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdChili,
+					artikelId = artikelIdPassierteTomaten,
+					menge = 400.0
+				),
+
+				// ---------- Caprese ----------
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCaprese,
+					artikelId = artikelIdTomate,
+					menge = 300.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCaprese,
+					artikelId = artikelIdMozzarella,
 					menge = 2.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCaprese,
+					artikelId = artikelIdOlivenoel,
+					menge = 20.0
 				),
 
 				// ---------- Pancakes ----------
@@ -463,6 +891,18 @@ abstract class AppDatabase: RoomDatabase() {
 					menge = 2.0
 				),
 
+				RezeptZutatEntity(
+					rezeptId = rezeptIdPancakes,
+					artikelId = artikelIdMehl,
+					menge = 250.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdPancakes,
+					artikelId = artikelIdButter,
+					menge = 30.0
+				),
+
 				// ---------- Rührei ----------
 
 				RezeptZutatEntity(
@@ -473,23 +913,75 @@ abstract class AppDatabase: RoomDatabase() {
 
 				RezeptZutatEntity(
 					rezeptId = rezeptIdRuehrei,
-					artikelId = artikelIdKaese,
-					menge = 50.0
+					artikelId = artikelIdButter,
+					menge = 20.0
 				),
 
-				// ---------- Salat ----------
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCaesar,
+					artikelId = artikelIdSalat,
+					menge = 1.0
+				),
 
 				RezeptZutatEntity(
-					rezeptId = rezeptIdSalat,
-					artikelId = artikelIdTomate,
+					rezeptId = rezeptIdCaesar,
+					artikelId = artikelIdHaehnchen,
+					menge = 250.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCaesar,
+					artikelId = artikelIdParmesan,
+					menge = 40.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCurry,
+					artikelId = artikelIdHaehnchen,
+					menge = 400.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCurry,
+					artikelId = artikelIdBrokkoli,
+					menge = 300.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdCurry,
+					artikelId = artikelIdKarotten,
 					menge = 200.0
 				),
 
 				RezeptZutatEntity(
-					rezeptId = rezeptIdSalat,
-					artikelId = artikelIdGurke,
+					rezeptId = rezeptIdCurry,
+					artikelId = artikelIdZwiebel,
 					menge = 1.0
-				)
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdKuchen,
+					artikelId = artikelIdMehl,
+					menge = 300.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdKuchen,
+					artikelId = artikelIdButter,
+					menge = 200.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdKuchen,
+					artikelId = artikelIdEier,
+					menge = 4.0
+				),
+
+				RezeptZutatEntity(
+					rezeptId = rezeptIdKuchen,
+					artikelId = artikelIdSchokolade,
+					menge = 200.0
+				),
 
 			)
 
